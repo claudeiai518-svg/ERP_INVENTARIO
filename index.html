@@ -563,12 +563,27 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
     <div class="modal-body">
       <div class="form-grid">
         <input type="hidden" id="itemId"/>
-        <div class="form-group"><label>Código *</label><input type="text" id="itemCodigo" placeholder="Ej: CAB-3IN"/></div>
+        <div class="form-group col-full">
+          <label>Descripción *</label>
+          <input type="text" id="itemDesc" placeholder="Descripción completa del item" oninput="autoGenerarCodigo(this.value)"/>
+        </div>
+        <div class="form-group">
+          <label>Código * <span style="font-size:10px;color:var(--teal);font-weight:400">— se genera automático</span></label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="itemCodigo" placeholder="Auto desde descripción" style="flex:1;font-family:'DM Mono',monospace;font-size:13px;text-transform:uppercase"/>
+            <button type="button" onclick="autoGenerarCodigo(document.getElementById('itemDesc').value, true)" title="Regenerar código" style="padding:10px 12px;border-radius:8px;background:var(--bg2);border:1.5px solid var(--border);color:var(--teal);cursor:pointer;flex-shrink:0"><i class="fas fa-rotate"></i></button>
+          </div>
+        </div>
         <div class="form-group"><label>Unidad de Medida *</label>
           <select id="itemUnidad"><option value="">Seleccionar...</option><option>Unidad</option><option>Metro</option><option>Kilogramo</option><option>Litro</option><option>Rollo</option><option>Bolsa</option><option>Caja</option><option>Par</option><option>Juego</option></select></div>
-        <div class="form-group col-full"><label>Descripción *</label><input type="text" id="itemDesc" placeholder="Descripción completa del item"/></div>
         <div class="form-group"><label>Categoría *</label><input type="text" id="itemCategoria" placeholder="Ej: Conductores, Tubería..."/></div>
-        <div class="form-group"><label>Bodega</label><input type="text" id="itemBodega" placeholder="Ej: Principal"/></div>
+        <div class="form-group">
+          <label>Bodega</label>
+          <select id="itemBodega" onchange="toggleBodegaNueva(this.value)" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface);color:var(--text)">
+            <option value="">Sin bodega</option>
+          </select>
+          <input type="text" id="itemBodegaNueva" placeholder="Nombre de la nueva bodega..." style="display:none;margin-top:6px;width:100%;padding:10px 14px;border:1.5px solid var(--teal);border-radius:var(--radius-sm);font-size:13.5px"/>
+        </div>
         <div class="form-group"><label>Stock Actual</label><input type="number" id="itemStock" placeholder="0" min="0" step="0.01"/></div>
         <div class="form-group"><label>Stock Mínimo</label><input type="number" id="itemStockMin" placeholder="0" min="0" step="0.01"/></div>
         <div class="form-group col-full"><label>Precio Unitario (COP) *</label><input type="number" id="itemPrecio" placeholder="0" min="0" step="1"/></div>
@@ -1011,14 +1026,144 @@ function poblarSelectItems() {
   });
 }
 
+// ============================================================
+// GENERACIÓN AUTOMÁTICA DE CÓDIGO DESDE DESCRIPCIÓN
+// ============================================================
+
+// Mapa de palabras clave → prefijo de 3 letras
+const PREFIJOS_CODIGO = {
+  // Eléctrico / conductores
+  'cable':   'CAB', 'conductor': 'CON', 'alambre': 'ALA', 'thw': 'THW',
+  'enchufe': 'ENC', 'toma': 'TOM', 'breaker': 'BRK', 'interruptor': 'INT',
+  'fusible': 'FUS', 'contactor': 'CTR', 'relay': 'RLY', 'relé': 'RLY',
+  'transformador': 'TRF', 'motor': 'MOT', 'variador': 'VAR',
+  // Mecánico / taller
+  'tornillo': 'TOR', 'tuerca': 'TUE', 'perno': 'PER', 'arandela': 'ARA',
+  'perno': 'PNO', 'remache': 'REM', 'pasador': 'PAS', 'chaveta': 'CHA',
+  'eje': 'EJE', 'rodamiento': 'ROD', 'cojinete': 'COJ', 'reten': 'RET',
+  'resorte': 'RES', 'muelle': 'MUE', 'resorte': 'RST',
+  'engranaje': 'ENG', 'piñon': 'PIN', 'piñón': 'PIN', 'cadena': 'CAD',
+  'correa': 'COR', 'polea': 'POL', 'banda': 'BAN',
+  // Tuberías / hidráulico / neumático
+  'tubo': 'TUB', 'tuberia': 'TUB', 'tubería': 'TUB', 'manguera': 'MAN',
+  'codo': 'COD', 'tee': 'TEE', 'union': 'UNI', 'unión': 'UNI',
+  'valvula': 'VAL', 'válvula': 'VAL', 'fitting': 'FIT', 'niple': 'NIP',
+  'reduccion': 'RED', 'reducción': 'RED', 'brida': 'BRI', 'sello': 'SEL',
+  'empaque': 'EMP', 'oring': 'ORI', 'o-ring': 'ORI',
+  // Herramienta / EPP
+  'guante': 'GTE', 'casco': 'CAS', 'gafas': 'GAF', 'tapa': 'TAP',
+  'broca': 'BRO', 'disco': 'DIS', 'lija': 'LIJ', 'segueta': 'SEG',
+  'llave': 'LLA', 'destornillador': 'DST', 'martillo': 'MAR',
+  // Lubricantes / químicos
+  'aceite': 'ACE', 'grasa': 'GRA', 'lubricante': 'LUB', 'solvente': 'SOL',
+  'pintura': 'PIN', 'diluyente': 'DIL', 'sellador': 'SLD',
+  // Genéricos
+  'repuesto': 'REP', 'kit': 'KIT', 'set': 'SET', 'juego': 'JUG',
+};
+
+function autoGenerarCodigo(desc, forzar = false) {
+  const codigoEl = document.getElementById('itemCodigo');
+  // Si el campo ya tiene valor escrito manualmente y no es forzado, no sobreescribir
+  if (!forzar && codigoEl.dataset.editadoManual === '1') return;
+
+  desc = (desc || '').trim();
+  if (!desc) { if (!codigoEl.dataset.editadoManual) codigoEl.value = ''; return; }
+
+  const palabras = desc.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // quitar tildes
+    .split(/\s+/);
+
+  // Buscar prefijo por palabra clave
+  let prefijo = 'ITM';
+  for (const pal of palabras) {
+    if (PREFIJOS_CODIGO[pal]) { prefijo = PREFIJOS_CODIGO[pal]; break; }
+    // Buscar parcial (ej: "tornillos" → "tornillo")
+    const parcial = Object.keys(PREFIJOS_CODIGO).find(k => pal.startsWith(k) || k.startsWith(pal));
+    if (parcial) { prefijo = PREFIJOS_CODIGO[parcial]; break; }
+  }
+
+  // Sufijo: tomar letras/números relevantes de las siguientes palabras (máx 6 chars)
+  const sufijoPalabras = palabras.filter((p, i) => i > 0 && p.length > 1)
+    .map(p => p.replace(/[^a-z0-9]/g, '').toUpperCase())
+    .filter(Boolean);
+
+  let sufijo = '';
+  for (const s of sufijoPalabras) {
+    if (sufijo.length >= 6) break;
+    sufijo += s.slice(0, Math.max(2, 6 - sufijo.length));
+  }
+  sufijo = sufijo.slice(0, 6);
+
+  // Verificar unicidad en inventario existente
+  let codigo = prefijo + (sufijo ? '-' + sufijo : '');
+  const existentes = datosInventario.map(i => i.CODIGO || '');
+  if (existentes.includes(codigo)) {
+    // Agregar número secuencial
+    let n = 2;
+    while (existentes.includes(codigo + n)) n++;
+    codigo = codigo + n;
+  }
+
+  codigoEl.value = codigo;
+  codigoEl.dataset.editadoManual = '0';
+}
+
+// Marcar cuando el usuario edita el código manualmente
+document.addEventListener('DOMContentLoaded', () => {
+  const codigoEl = document.getElementById('itemCodigo');
+  if (codigoEl) {
+    codigoEl.addEventListener('input', () => { codigoEl.dataset.editadoManual = '1'; });
+  }
+});
+
+// ============================================================
+// BODEGAS — SELECT DINÁMICO + OPCIÓN "NUEVA"
+// ============================================================
+
+function poblarSelectBodegas(seleccionada = '') {
+  const sel = document.getElementById('itemBodega');
+  const bodegas = [...new Set(
+    datosInventario.map(i => (i.BODEGA || '').trim()).filter(Boolean)
+  )].sort();
+
+  let opts = '<option value="">Sin bodega</option>';
+  bodegas.forEach(b => {
+    opts += `<option value="${b}" ${b === seleccionada ? 'selected' : ''}>${b}</option>`;
+  });
+  opts += `<option value="__nueva__" ${seleccionada && !bodegas.includes(seleccionada) ? 'selected' : ''}>➕ Nueva bodega...</option>`;
+  sel.innerHTML = opts;
+
+  // Si la bodega guardada no está en la lista (item viejo con bodega única)
+  if (seleccionada && !bodegas.includes(seleccionada) && seleccionada !== '__nueva__') {
+    const opt = document.createElement('option');
+    opt.value = seleccionada; opt.textContent = seleccionada; opt.selected = true;
+    sel.insertBefore(opt, sel.querySelector('[value="__nueva__"]'));
+    sel.value = seleccionada;
+  }
+}
+
+function toggleBodegaNueva(val) {
+  const input = document.getElementById('itemBodegaNueva');
+  if (val === '__nueva__') {
+    input.style.display = 'block';
+    input.focus();
+  } else {
+    input.style.display = 'none';
+    input.value = '';
+  }
+}
+
 function openModalItem() {
   document.getElementById('itemId').value = '';
   document.getElementById('modalItemTitle').textContent = 'Nuevo Item';
-  ['itemCodigo','itemDesc','itemCategoria','itemBodega'].forEach(id => document.getElementById(id).value = '');
+  ['itemCodigo','itemDesc','itemCategoria'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('itemStock').value = '0';
   document.getElementById('itemStockMin').value = '0';
   document.getElementById('itemPrecio').value = '';
   document.getElementById('itemUnidad').value = '';
+  poblarSelectBodegas();
+  document.getElementById('itemBodegaNueva').style.display = 'none';
+  document.getElementById('itemBodegaNueva').value = '';
   openModal('modalItem');
 }
 
@@ -1028,11 +1173,13 @@ function editarItem(item) {
   document.getElementById('itemCodigo').value = item.CODIGO || '';
   document.getElementById('itemDesc').value = item.DESCRIPCION || '';
   document.getElementById('itemCategoria').value = item.CATEGORIA || '';
-  document.getElementById('itemBodega').value = item.BODEGA || '';
   document.getElementById('itemUnidad').value = item.UNIDAD || '';
   document.getElementById('itemStock').value = item.STOCK_ACTUAL || 0;
   document.getElementById('itemStockMin').value = item.STOCK_MINIMO || 0;
   document.getElementById('itemPrecio').value = item.PRECIO_UNITARIO || '';
+  poblarSelectBodegas(item.BODEGA || '');
+  document.getElementById('itemBodegaNueva').style.display = 'none';
+  document.getElementById('itemBodegaNueva').value = '';
   openModal('modalItem');
 }
 
@@ -1043,7 +1190,7 @@ async function guardarItem() {
     CODIGO: document.getElementById('itemCodigo').value.trim(),
     DESCRIPCION: document.getElementById('itemDesc').value.trim(),
     CATEGORIA: document.getElementById('itemCategoria').value.trim(),
-    BODEGA: document.getElementById('itemBodega').value.trim(),
+    BODEGA: (document.getElementById('itemBodega').value === '__nueva__' ? document.getElementById('itemBodegaNueva').value.trim() : document.getElementById('itemBodega').value).trim(),
     UNIDAD: document.getElementById('itemUnidad').value,
     STOCK_ACTUAL: parseFloat(document.getElementById('itemStock').value) || 0,
     STOCK_MINIMO: parseFloat(document.getElementById('itemStockMin').value) || 0,
