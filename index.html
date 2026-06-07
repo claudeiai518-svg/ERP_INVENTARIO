@@ -2523,8 +2523,18 @@ async function importarXLSX(inputEl, modulo, nombreHoja) {
       const filas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
       if (!filas.length) { toast('El archivo está vacío', 'error'); return; }
 
-      const headersArchivo = filas[0].map(h => String(h).trim().toUpperCase());
-      const datos = filas.slice(1).filter(f => f.some(v => v !== ''));
+      // Detectar automáticamente la fila de headers (busca la que tenga columnas conocidas)
+      let headerRowIdx = 0;
+      for (let i = 0; i < Math.min(filas.length, 10); i++) {
+        const row = filas[i].map(h => String(h||'').trim().toUpperCase());
+        if (columnasEsperadas.some(col => row.includes(col.toUpperCase()))) {
+          headerRowIdx = i;
+          break;
+        }
+      }
+
+      const headersArchivo = filas[headerRowIdx].map(h => String(h||'').trim().toUpperCase());
+      const datos = filas.slice(headerRowIdx + 1).filter(f => f.some(v => v !== ''));
 
       if (!datos.length) { toast('No hay datos en el archivo (solo encabezados)', 'warning'); return; }
 
