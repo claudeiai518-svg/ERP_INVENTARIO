@@ -1265,6 +1265,11 @@ function filtrarMovimientos() {
 }
 
 function openModalMovimiento() {
+  poblarSelectItems();
+  document.getElementById('movItem').value = '';
+  document.getElementById('movTipo').value = 'ENTRADA';
+  document.getElementById('movCantidad').value = '';
+  document.getElementById('movOT').value = '';
   document.getElementById('movFecha').value = hoy();
   openModal('modalMovimiento');
   setTimeout(() => poblarSelectEmpleados('movResponsable'), 50);
@@ -1336,6 +1341,7 @@ function filtrarSolicitudes() {
 }
 
 function openModalSolicitud() {
+  poblarSelectItems();
   document.getElementById('solItem').value = '';
   document.getElementById('solCantidad').value = '';
   document.getElementById('solSolicitante').value = sesion?.empleado || '';
@@ -1585,6 +1591,7 @@ async function loadAjustes() {
 }
 
 function openModalAjuste() {
+  poblarSelectItems();
   document.getElementById('ajuItem').value = '';
   document.getElementById('ajuTipo').value = 'Positivo';
   document.getElementById('ajuCantidad').value = '';
