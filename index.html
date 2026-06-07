@@ -989,7 +989,7 @@ function renderInventario(items) {
       <td>${i.DESCRIPCION||''}</td>
       <td><span class="badge badge-neutral">${i.CATEGORIA||'—'}</span></td>
       <td>${i.BODEGA||'—'}</td>
-      <td>${i.UNIDAD||''}</td>
+      <td>${i.UNIDAD_MEDIDA||i.UNIDAD||''}</td>
       <td>
         <div class="stock-bar">
           <span class="badge ${badgeCls}">${stock}</span>
@@ -1173,7 +1173,7 @@ function editarItem(item) {
   document.getElementById('itemCodigo').value = item.CODIGO || '';
   document.getElementById('itemDesc').value = item.DESCRIPCION || '';
   document.getElementById('itemCategoria').value = item.CATEGORIA || '';
-  document.getElementById('itemUnidad').value = item.UNIDAD || '';
+  document.getElementById('itemUnidad').value = item.UNIDAD_MEDIDA || item.UNIDAD || '';
   document.getElementById('itemStock').value = item.STOCK_ACTUAL || 0;
   document.getElementById('itemStockMin').value = item.STOCK_MINIMO || 0;
   document.getElementById('itemPrecio').value = item.PRECIO_UNITARIO || '';
@@ -1191,7 +1191,7 @@ async function guardarItem() {
     DESCRIPCION: document.getElementById('itemDesc').value.trim(),
     CATEGORIA: document.getElementById('itemCategoria').value.trim(),
     BODEGA: (document.getElementById('itemBodega').value === '__nueva__' ? document.getElementById('itemBodegaNueva').value.trim() : document.getElementById('itemBodega').value).trim(),
-    UNIDAD: document.getElementById('itemUnidad').value,
+    UNIDAD_MEDIDA: document.getElementById('itemUnidad').value,
     STOCK_ACTUAL: parseFloat(document.getElementById('itemStock').value) || 0,
     STOCK_MINIMO: parseFloat(document.getElementById('itemStockMin').value) || 0,
     PRECIO_UNITARIO: parseFloat(document.getElementById('itemPrecio').value) || 0,
