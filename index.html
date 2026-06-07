@@ -979,7 +979,7 @@ function renderInventario(items) {
   const tb = document.getElementById('tb-inventario');
   if (!items.length) { tb.innerHTML = '<tr><td colspan="10" class="table-empty"><i class="fas fa-box-open"></i><br>No hay items registrados</td></tr>'; return; }
   tb.innerHTML = items.map(i => {
-    const stock = parseFloat(i.STOCK_ACTUAL) || 0;
+    const stock = parseFloat(i.CANTIDAD ?? i.STOCK_ACTUAL) || 0;
     const min = parseFloat(i.STOCK_MINIMO) || 0;
     const pct = min > 0 ? Math.min((stock / min) * 100, 100) : 100;
     const cls = stock <= 0 ? 'critical' : stock <= min ? 'low' : 'ok';
@@ -1174,7 +1174,7 @@ function editarItem(item) {
   document.getElementById('itemDesc').value = item.DESCRIPCION || '';
   document.getElementById('itemCategoria').value = item.CATEGORIA || '';
   document.getElementById('itemUnidad').value = item.UNIDAD_MEDIDA || item.UNIDAD || '';
-  document.getElementById('itemStock').value = item.STOCK_ACTUAL || 0;
+  document.getElementById('itemStock').value = item.CANTIDAD ?? item.STOCK_ACTUAL ?? 0;
   document.getElementById('itemStockMin').value = item.STOCK_MINIMO || 0;
   document.getElementById('itemPrecio').value = item.PRECIO_UNITARIO || '';
   poblarSelectBodegas(item.BODEGA || '');
@@ -1192,7 +1192,7 @@ async function guardarItem() {
     CATEGORIA: document.getElementById('itemCategoria').value.trim(),
     BODEGA: (document.getElementById('itemBodega').value === '__nueva__' ? document.getElementById('itemBodegaNueva').value.trim() : document.getElementById('itemBodega').value).trim(),
     UNIDAD_MEDIDA: document.getElementById('itemUnidad').value,
-    STOCK_ACTUAL: parseFloat(document.getElementById('itemStock').value) || 0,
+    CANTIDAD: parseFloat(document.getElementById('itemStock').value) || 0,
     STOCK_MINIMO: parseFloat(document.getElementById('itemStockMin').value) || 0,
     PRECIO_UNITARIO: parseFloat(document.getElementById('itemPrecio').value) || 0,
   };
@@ -1796,25 +1796,24 @@ document.querySelectorAll('input[type="date"]').forEach(i => { if (!i.value) i.v
     </div>`;
 
   try {
-    // Verificar que el token sigue vivo en el servidor
-    const r = await apiCall('AUTH', 'logout', { token: '__ping__' }).catch(() => null);
-    // Usamos una llamada liviana: intentar listar inventario con el token
+    // Asignar sesión ANTES del apiCall para que el token vaya en la petición
+    sesion = sesionGuardada;
     const check = await apiCall('INVENTARIO', 'listar');
-    if (check && check.ok !== false) {
-      // Token válido — restaurar sin pedir login
-      sesion = sesionGuardada;
-      localStorage.setItem('inv_sesion', JSON.stringify(sesion)); // refrescar timestamp
+    if (check && check.ok) {
+      // Token válido — entrar directo
+      localStorage.setItem('inv_sesion', JSON.stringify(sesion));
       iniciarApp();
       loadDatosCoreProxy();
       loadDashboard();
       loadInventarioData();
       return;
     }
-  } catch(e) { /* token expirado o sin red */ }
+    // El servidor rechazó el token (expirado)
+    sesion = null;
+  } catch(e) { sesion = null; /* sin red u otro error */ }
 
-  // Token inválido — limpiar y mostrar login normal
+  // Token inválido o expirado — limpiar y mostrar login normal
   localStorage.removeItem('inv_sesion');
-  location.reload();
 })();
 </script>
 </body>
