@@ -629,9 +629,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('inventario','Inventario')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Inventario',["CODIGO", "DESCRIPCION", "CATEGORIA", "BODEGA", "UNIDAD_MEDIDA", "CANTIDAD", "STOCK_MINIMO", "PRECIO_UNITARIO", "ESTADO"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Inventario')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('inventario')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-inventario" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'inventario','Inventario',["CODIGO", "DESCRIPCION", "CATEGORIA", "BODEGA", "UNIDAD_MEDIDA", "CANTIDAD", "STOCK_MINIMO", "PRECIO_UNITARIO", "ESTADO"])"/>
+            <input type="file" id="importInput-inventario" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'inventario','Inventario')"/>
           </div>
         </div>
           <button class="btn btn-primary" id="btnNuevoItem" onclick="openModalItem()"><i class="fas fa-plus"></i> Nuevo Item</button>
@@ -712,9 +712,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('movimientos','Movimientos')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Movimientos',["FECHA", "ID_ITEM", "TIPO", "CANTIDAD", "RESPONSABLE", "REFERENCIA"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Movimientos')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('movimientos')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-movimientos" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'movimientos','Movimientos',["FECHA", "ID_ITEM", "TIPO", "CANTIDAD", "RESPONSABLE", "REFERENCIA"])"/>
+            <input type="file" id="importInput-movimientos" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'movimientos','Movimientos')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalMovimiento()"><i class="fas fa-plus"></i> Registrar</button>
@@ -752,9 +752,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('solicitudes','Solicitudes')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Solicitudes',["FECHA", "ID_ITEM", "CANTIDAD", "SOLICITANTE", "ESTADO", "PRIORIDAD", "OBSERVACIONES"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Solicitudes')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('solicitudes')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-solicitudes" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'solicitudes','Solicitudes',["FECHA", "ID_ITEM", "CANTIDAD", "SOLICITANTE", "ESTADO", "PRIORIDAD", "OBSERVACIONES"])"/>
+            <input type="file" id="importInput-solicitudes" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'solicitudes','Solicitudes')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalSolicitud()"><i class="fas fa-plus"></i> Nueva Solicitud</button>
@@ -792,9 +792,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('ordenescompra','OrdCompra')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('OrdCompra',["ID_OC", "PROVEEDOR", "FECHA", "ESTADO", "TOTAL", "OBSERVACIONES"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('OrdCompra')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('ordenescompra')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-ordenescompra" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'ordenescompra','OrdCompra',["ID_OC", "PROVEEDOR", "FECHA", "ESTADO", "TOTAL", "OBSERVACIONES"])"/>
+            <input type="file" id="importInput-ordenescompra" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'ordenescompra','OrdCompra')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalOC()"><i class="fas fa-plus"></i> Nueva OC</button>
@@ -826,9 +826,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('traslados','Traslados')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Traslados',["FECHA", "ID_ITEM", "BODEGA_ORIGEN", "BODEGA_DESTINO", "CANTIDAD", "RESPONSABLE"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Traslados')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('traslados')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-traslados" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'traslados','Traslados',["FECHA", "ID_ITEM", "BODEGA_ORIGEN", "BODEGA_DESTINO", "CANTIDAD", "RESPONSABLE"])"/>
+            <input type="file" id="importInput-traslados" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'traslados','Traslados')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalTraslado()"><i class="fas fa-plus"></i> Nuevo Traslado</button>
@@ -857,9 +857,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('ajustes','Ajustes')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Ajustes',["FECHA", "ID_ITEM", "TIPO", "CANTIDAD", "MOTIVO"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Ajustes')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('ajustes')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-ajustes" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'ajustes','Ajustes',["FECHA", "ID_ITEM", "TIPO", "CANTIDAD", "MOTIVO"])"/>
+            <input type="file" id="importInput-ajustes" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'ajustes','Ajustes')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalAjuste()"><i class="fas fa-plus"></i> Nuevo Ajuste</button>
@@ -899,9 +899,9 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button class="xdrop-item" onclick="exportXLSX('salidas','Salidas')"><i class="fas fa-file-excel" style="color:#16a34a"></i> Exportar a Excel (.xlsx)</button>
             <div class="xdrop-divider"></div>
             <span class="xdrop-label">Importar</span>
-            <button class="xdrop-item" onclick="descargarPlantilla('Salidas',["FECHA", "ID_OT", "RESPONSABLE", "TOTAL", "OBSERVACIONES"])"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
+            <button class="xdrop-item" onclick="descargarPlantilla('Salidas')"><i class="fas fa-download" style="color:#0284c7"></i> Plantilla Excel</button>
             <button class="xdrop-item" onclick="triggerImport('salidas')"><i class="fas fa-file-import" style="color:#7c3aed"></i> Importar desde Excel</button>
-            <input type="file" id="importInput-salidas" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'salidas','Salidas',["FECHA", "ID_OT", "RESPONSABLE", "TOTAL", "OBSERVACIONES"])"/>
+            <input type="file" id="importInput-salidas" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarXLSX(this,'salidas','Salidas')"/>
           </div>
         </div>
           <button class="btn btn-primary" onclick="openModalSalida()"><i class="fas fa-plus"></i> Registrar Salida</button>
@@ -1811,7 +1811,10 @@ function renderOC(ocs) {
       <td>${fmtFecha(o.FECHA)}</td>
       <td><span class="badge status-${est}">${o.ESTADO}</span></td>
       <td>$${formatNum(o.TOTAL)}</td>
-      <td>
+      <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" title="Descargar PDF de esta OC" onclick="exportPDFoc('${o.ID_OC}')">
+          <i class="fas fa-file-pdf" style="color:#dc2626"></i> PDF
+        </button>
         ${['Borrador','Enviada','Confirmada'].includes(o.ESTADO) ? `
           <button class="btn btn-success btn-sm" onclick="recibirOC('${o.ID_OC}')"><i class="fas fa-truck"></i> Recibir</button>
           <select class="btn btn-secondary btn-sm" onchange="cambiarEstadoOC('${o.ID_OC}',this.value)" style="padding:5px">
@@ -1820,7 +1823,7 @@ function renderOC(ocs) {
             <option value="Confirmada">Confirmada</option>
             <option value="Cancelada">Cancelar</option>
           </select>
-        ` : '—'}
+        ` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -2260,6 +2263,102 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.xbtn-wrap')) document.querySelectorAll('.xbtn-wrap.open').forEach(el => el.classList.remove('open'));
 });
 
+
+// PDF individual por Orden de Compra
+async function exportPDFoc(idOC) {
+  const oc = datosOC.find(o => o.ID_OC === idOC);
+  if (!oc) { toast('OC no encontrada', 'error'); return; }
+
+  // Cargar detalle de líneas
+  let lineas = [];
+  try {
+    const r = await apiCall('ORDENES_COMPRA', 'obtenerDetalle', { idOC });
+    if (r?.ok) lineas = r.datos || [];
+  } catch(e) { /* sin detalle */ }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const fecha = new Date(oc.FECHA || Date.now()).toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
+
+  // ── Header corporativo ──
+  doc.setFillColor(15,31,92); doc.rect(0,0,W,32,'F');
+  doc.setFillColor(13,148,136); doc.rect(0,32,W,2.5,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(255,255,255);
+  doc.text('NEXORA ERP', 14, 13);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('GRUPO WEDM · GESTIÓN DE INVENTARIO', 14, 20);
+  doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('ORDEN DE COMPRA', 14, 28);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text(`Generado: ${new Date().toLocaleDateString('es-CO')}`, W-14, 20, {align:'right'});
+
+  // ── ID OC grande ──
+  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(15,31,92);
+  doc.text(oc.ID_OC || '—', W-14, 28, {align:'right'});
+
+  // ── Datos de la OC ──
+  let y = 44;
+  const estColor = (oc.ESTADO||'').toLowerCase().includes('cancel') ? [220,38,38] :
+                   (oc.ESTADO||'').toLowerCase().includes('recib') ? [22,163,74] :
+                   (oc.ESTADO||'').toLowerCase().includes('confirm') ? [2,132,199] : [217,119,6];
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...estColor);
+  doc.roundedRect(W-50, 38, 36, 9, 2, 2, 'S');
+  doc.text(oc.ESTADO||'—', W-32, 44, {align:'center'});
+
+  doc.setTextColor(55,65,81); doc.setFontSize(9); doc.setFont('helvetica','normal');
+  const campos = [
+    ['Proveedor:', oc.PROVEEDOR||'—'],
+    ['Fecha OC:', fecha],
+    ['Total:', '$'+Number(oc.TOTAL||0).toLocaleString('es-CO')],
+    ['Observaciones:', oc.OBSERVACIONES||'—'],
+  ];
+  campos.forEach(([label, val]) => {
+    doc.setFont('helvetica','bold'); doc.text(label, 14, y);
+    doc.setFont('helvetica','normal'); doc.text(val, 55, y);
+    y += 7;
+  });
+  y += 4;
+
+  // ── Líneas de detalle ──
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(15,31,92);
+  doc.text('DETALLE DE ARTÍCULOS', 14, y); y += 2;
+
+  if (lineas.length) {
+    doc.autoTable({
+      head:[['#','Código/Item','Cantidad','Valor Unit.','Subtotal']],
+      body: lineas.map((l,i) => [
+        i+1,
+        l.ID_ITEM||l.CODIGO||'—',
+        l.CANTIDAD||0,
+        '$'+Number(l.VALOR_UNITARIO||0).toLocaleString('es-CO'),
+        '$'+Number((l.CANTIDAD||0)*(l.VALOR_UNITARIO||0)).toLocaleString('es-CO'),
+      ]),
+      startY: y+2,
+      styles:{fontSize:9, cellPadding:3},
+      headStyles:{fillColor:[15,31,92],textColor:255,fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[244,246,251]},
+      foot:[['','','','TOTAL','$'+Number(oc.TOTAL||0).toLocaleString('es-CO')]],
+      footStyles:{fontStyle:'bold',fillColor:[238,241,248],textColor:[15,31,92]},
+      margin:{left:14,right:14},
+    });
+  } else {
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(107,114,128);
+    doc.text('Sin líneas de detalle registradas.', 14, y+4);
+  }
+
+  // ── Footer ──
+  const pageH = doc.internal.pageSize.getHeight();
+  doc.setFontSize(8); doc.setTextColor(107,114,128);
+  doc.text('Nexora ERP — Grupo WEDM · Documento generado automáticamente', 14, pageH-8);
+  doc.text(`${oc.ID_OC}`, W-14, pageH-8, {align:'right'});
+
+  doc.save(`OC_${oc.ID_OC}_${new Date().toISOString().slice(0,10)}.pdf`);
+  toast(`PDF de ${oc.ID_OC} descargado`, 'success');
+}
+
 // ── PDF ──────────────────────────────────────────────────────────────────
 function exportPDF(modulo) {
   document.querySelectorAll('.xbtn-wrap.open').forEach(el => el.classList.remove('open'));
@@ -2361,7 +2460,18 @@ function exportarTodoXLSX() {
 }
 
 // ── PLANTILLA XLSX ───────────────────────────────────────────────────────
-function descargarPlantilla(nombreHoja, columnas) {
+const _COLS_PLANTILLA = {
+  'Inventario':   ['CODIGO','DESCRIPCION','CATEGORIA','BODEGA','UNIDAD_MEDIDA','CANTIDAD','STOCK_MINIMO','PRECIO_UNITARIO','ESTADO'],
+  'Movimientos':  ['FECHA','ID_ITEM','TIPO','CANTIDAD','RESPONSABLE','REFERENCIA'],
+  'Solicitudes':  ['FECHA','ID_ITEM','CANTIDAD','SOLICITANTE','ESTADO','PRIORIDAD','OBSERVACIONES'],
+  'OrdCompra':    ['ID_OC','PROVEEDOR','FECHA','ESTADO','TOTAL','OBSERVACIONES'],
+  'Traslados':    ['FECHA','ID_ITEM','BODEGA_ORIGEN','BODEGA_DESTINO','CANTIDAD','RESPONSABLE'],
+  'Ajustes':      ['FECHA','ID_ITEM','TIPO','CANTIDAD','MOTIVO'],
+  'Salidas':      ['FECHA','ID_OT','RESPONSABLE','TOTAL','OBSERVACIONES'],
+};
+
+function descargarPlantilla(nombreHoja) {
+  const columnas = _COLS_PLANTILLA[nombreHoja] || [];
   document.querySelectorAll('.xbtn-wrap.open').forEach(el => el.classList.remove('open'));
   const wb = XLSX.utils.book_new();
 
@@ -2399,7 +2509,8 @@ function triggerImport(modulo) {
   document.getElementById('importInput-'+modulo).click();
 }
 
-async function importarXLSX(inputEl, modulo, nombreHoja, columnasEsperadas) {
+async function importarXLSX(inputEl, modulo, nombreHoja) {
+  const columnasEsperadas = _COLS_PLANTILLA[nombreHoja] || [];
   const file = inputEl.files[0];
   if (!file) return;
   inputEl.value = ''; // reset para poder importar de nuevo
