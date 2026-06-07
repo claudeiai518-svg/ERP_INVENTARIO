@@ -842,12 +842,8 @@ async function doLogin() {
     const r = await apiCall('AUTH', 'login', { username: u, password: p });
     if (!r.ok) { showLoginError(r.mensaje); return; }
     sesion = r.datos;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('userName').textContent = sesion.empleado || sesion.username;
-    document.getElementById('userRol').textContent = sesion.rol;
-    document.getElementById('userAvatar').textContent = (sesion.empleado || sesion.username)[0].toUpperCase();
-    // Cargar datos del CORE via proxy (proveedores y empleados)
+    localStorage.setItem('inv_sesion', JSON.stringify(sesion));
+    iniciarApp();
     loadDatosCoreProxy();
     loadDashboard();
     loadInventarioData();
@@ -864,9 +860,18 @@ function showLoginError(msg) {
 }
 document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
+function iniciarApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('userName').textContent = sesion.empleado || sesion.username || '—';
+  document.getElementById('userRol').textContent = sesion.rol || '—';
+  document.getElementById('userAvatar').textContent = ((sesion.empleado || sesion.username || 'U')[0]).toUpperCase();
+}
+
 function doLogout() {
   if (sesion?.token) apiCall('AUTH', 'logout', { token: sesion.token }).catch(()=>{});
   sesion = null;
+  localStorage.removeItem('inv_sesion');
   datosInventario = [];
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
@@ -1623,6 +1628,47 @@ function hoy() {
 
 // Inicializar fecha actual en campos de fecha
 document.querySelectorAll('input[type="date"]').forEach(i => { if (!i.value) i.value = hoy(); });
+
+// ============================================================
+// RESTAURAR SESIÓN AL RECARGAR LA PÁGINA
+// ============================================================
+(async function restaurarSesion() {
+  const guardada = localStorage.getItem('inv_sesion');
+  if (!guardada) return; // no hay sesión guardada, mostrar login normal
+
+  let sesionGuardada;
+  try { sesionGuardada = JSON.parse(guardada); } catch(e) { localStorage.removeItem('inv_sesion'); return; }
+  if (!sesionGuardada?.token) { localStorage.removeItem('inv_sesion'); return; }
+
+  // Mostrar pantalla de carga mientras verificamos
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.querySelector('.login-card').innerHTML = `
+    <div style="text-align:center;padding:40px 0">
+      <span class="spinner dark" style="width:36px;height:36px;border-width:3px"></span>
+      <p style="margin-top:20px;color:var(--text-muted);font-size:14px">Restaurando sesión...</p>
+    </div>`;
+
+  try {
+    // Verificar que el token sigue vivo en el servidor
+    const r = await apiCall('AUTH', 'logout', { token: '__ping__' }).catch(() => null);
+    // Usamos una llamada liviana: intentar listar inventario con el token
+    const check = await apiCall('INVENTARIO', 'listar');
+    if (check && check.ok !== false) {
+      // Token válido — restaurar sin pedir login
+      sesion = sesionGuardada;
+      localStorage.setItem('inv_sesion', JSON.stringify(sesion)); // refrescar timestamp
+      iniciarApp();
+      loadDatosCoreProxy();
+      loadDashboard();
+      loadInventarioData();
+      return;
+    }
+  } catch(e) { /* token expirado o sin red */ }
+
+  // Token inválido — limpiar y mostrar login normal
+  localStorage.removeItem('inv_sesion');
+  location.reload();
+})();
 </script>
 </body>
 </html>
