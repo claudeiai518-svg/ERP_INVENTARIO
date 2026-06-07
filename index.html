@@ -2523,17 +2523,49 @@ async function importarXLSX(inputEl, modulo, nombreHoja) {
       const filas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
       if (!filas.length) { toast('El archivo está vacío', 'error'); return; }
 
-      // Detectar automáticamente la fila de headers (busca la que tenga columnas conocidas)
+      // Normalizar: quitar tildes, espacios y pasar a UPPER para comparar
+      const normalizar = s => String(s||'').trim().toUpperCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')  // quitar tildes
+        .replace(/\s+/g,'_');  // espacios → guión bajo
+
+      // Mapa de encabezados bonitos → nombre de campo real
+      const ALIAS_HEADERS = {
+        'CODIGO':'CODIGO','DESCRIPCION':'DESCRIPCION','CATEGORIA':'CATEGORIA',
+        'BODEGA':'BODEGA','UNIDAD':'UNIDAD_MEDIDA','UNIDAD_MEDIDA':'UNIDAD_MEDIDA',
+        'UNIDAD_DE_MEDIDA':'UNIDAD_MEDIDA','CANTIDAD':'CANTIDAD','STOCK':'CANTIDAD',
+        'STOCK_ACTUAL':'CANTIDAD','STOCK_MINIMO':'STOCK_MINIMO','MINIMO':'STOCK_MINIMO',
+        'MIN':'STOCK_MINIMO','PRECIO':'PRECIO_UNITARIO','PRECIO_UNITARIO':'PRECIO_UNITARIO',
+        'PRECIO_UNIT':'PRECIO_UNITARIO','ESTADO':'ESTADO',
+        // Movimientos
+        'FECHA':'FECHA','ID_ITEM':'ID_ITEM','ITEM':'ID_ITEM','TIPO':'TIPO',
+        'RESPONSABLE':'RESPONSABLE','REFERENCIA':'REFERENCIA','OT':'REFERENCIA',
+        // Solicitudes
+        'SOLICITANTE':'SOLICITANTE','PRIORIDAD':'PRIORIDAD','OBSERVACIONES':'OBSERVACIONES',
+        // OC
+        'ID_OC':'ID_OC','PROVEEDOR':'PROVEEDOR','TOTAL':'TOTAL',
+        // Traslados
+        'BODEGA_ORIGEN':'BODEGA_ORIGEN','BODEGA_DESTINO':'BODEGA_DESTINO',
+        // Ajustes
+        'MOTIVO':'MOTIVO',
+        // Salidas
+        'ID_OT':'ID_OT',
+      };
+
+      // Detectar automáticamente la fila de headers
       let headerRowIdx = 0;
       for (let i = 0; i < Math.min(filas.length, 10); i++) {
-        const row = filas[i].map(h => String(h||'').trim().toUpperCase());
-        if (columnasEsperadas.some(col => row.includes(col.toUpperCase()))) {
-          headerRowIdx = i;
-          break;
+        const row = filas[i].map(h => normalizar(h));
+        const mapped = row.map(h => ALIAS_HEADERS[h] || h);
+        if (columnasEsperadas.some(col => mapped.includes(col.toUpperCase()))) {
+          headerRowIdx = i; break;
         }
       }
 
-      const headersArchivo = filas[headerRowIdx].map(h => String(h||'').trim().toUpperCase());
+      // Mapear headers del archivo → nombres reales de campo
+      const headersArchivo = filas[headerRowIdx].map(h => {
+        const norm = normalizar(h);
+        return ALIAS_HEADERS[norm] || norm;
+      });
       const datos = filas.slice(headerRowIdx + 1).filter(f => f.some(v => v !== ''));
 
       if (!datos.length) { toast('No hay datos en el archivo (solo encabezados)', 'warning'); return; }
