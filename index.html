@@ -366,19 +366,68 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
     <div class="view" id="view-inventario">
       <div class="view-header">
         <div><h2>Inventario</h2><p>Gestión de items y stock</p></div>
-        <button class="btn btn-primary" onclick="openModalItem()"><i class="fas fa-plus"></i> Nuevo Item</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary" id="btnRefreshInv" onclick="refreshInventarioActivo()"><i class="fas fa-rotate"></i> Actualizar</button>
+          <button class="btn btn-primary" id="btnNuevoItem" onclick="openModalItem()"><i class="fas fa-plus"></i> Nuevo Item</button>
+        </div>
       </div>
-      <div class="toolbar">
-        <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="searchInv" placeholder="Buscar por código, descripción, categoría..." oninput="filtrarInventario()"/></div>
-        <select id="filterCategoria" onchange="filtrarInventario()" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface)">
-          <option value="">Todas las categorías</option>
-        </select>
+
+      <!-- TABS -->
+      <div class="inv-tabs">
+        <button class="inv-tab active" id="tab-inv-pro" onclick="switchInvTab('pro')">
+          <i class="fas fa-box"></i> Inventario PRO
+          <span class="tab-badge" id="badge-inv-pro">—</span>
+        </button>
+        <button class="inv-tab" id="tab-inv-core" onclick="switchInvTab('core')">
+          <i class="fas fa-database"></i> Inventario CORE
+          <span class="tab-badge core" id="badge-inv-core">—</span>
+        </button>
       </div>
-      <div class="table-container">
-        <div class="table-responsive"><table>
-          <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody id="tb-inventario"><tr><td colspan="10" class="table-empty"><span class="spinner dark"></span></td></tr></tbody>
-        </table></div>
+
+      <!-- PANEL PRO -->
+      <div class="inv-panel active" id="panel-inv-pro">
+        <div class="toolbar">
+          <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="searchInv" placeholder="Buscar por código, descripción, categoría..." oninput="filtrarInventario()"/></div>
+          <select id="filterCategoria" onchange="filtrarInventario()" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface)">
+            <option value="">Todas las categorías</option>
+          </select>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive"><table>
+            <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tb-inventario"><tr><td colspan="10" class="table-empty"><span class="spinner dark"></span></td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PANEL CORE -->
+      <div class="inv-panel" id="panel-inv-core">
+        <div class="core-readonly-note">
+          <i class="fas fa-circle-info"></i>
+          <span>Datos en <strong>tiempo real</strong> del ERP CORE — solo lectura. Para editar, usa el módulo correspondiente en el CORE.</span>
+          <span id="core-inv-ts" style="margin-left:auto;opacity:.7;font-size:11px"></span>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="searchInvCore" placeholder="Buscar en inventario CORE..." oninput="filtrarInventarioCore()"/></div>
+          <select id="filterCategoriaCore" onchange="filtrarInventarioCore()" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface)">
+            <option value="">Todas las categorías</option>
+          </select>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive"><table>
+            <thead><tr>
+              <th><span class="source-badge core">CORE</span> Código/ID</th>
+              <th>Descripción / Nombre</th>
+              <th>Categoría</th>
+              <th>Bodega / Ubicación</th>
+              <th>Unidad</th>
+              <th>Stock</th>
+              <th>Precio Unit.</th>
+              <th>Estado</th>
+            </tr></thead>
+            <tbody id="tb-inventario-core"><tr><td colspan="8" class="table-empty"><i class="fas fa-database" style="opacity:.3"></i><br>Haz clic en la pestaña para cargar</td></tr></tbody>
+          </table></div>
+        </div>
       </div>
     </div>
 
@@ -895,6 +944,8 @@ async function loadInventarioData() {
     if (!r.ok) throw new Error(r.mensaje);
     datosInventario = r.datos || [];
     renderInventario(datosInventario);
+    // Actualizar badge del tab PRO
+    document.getElementById('badge-inv-pro').textContent = datosInventario.length;
     // Poblar filtro de categorías
     const cats = [...new Set(datosInventario.map(i => i.CATEGORIA).filter(Boolean))];
     const sel = document.getElementById('filterCategoria');
@@ -1435,6 +1486,102 @@ async function guardarSalida() {
     closeModal('modalSalida');
     loadSalidas();
   } catch(e) { toast(e.message, 'error'); }
+}
+
+// ============================================================
+// INVENTARIO CORE — Tab secundario (solo lectura, vía proxy)
+// ============================================================
+let datosInventarioCore = [];
+let invTabActivo = 'pro';
+let inventarioCoreYaCargado = false;
+
+function switchInvTab(tab) {
+  invTabActivo = tab;
+  document.getElementById('tab-inv-pro').classList.toggle('active', tab === 'pro');
+  document.getElementById('tab-inv-core').classList.toggle('active', tab === 'core');
+  document.getElementById('panel-inv-pro').classList.toggle('active', tab === 'pro');
+  document.getElementById('panel-inv-core').classList.toggle('active', tab === 'core');
+  document.getElementById('btnNuevoItem').style.display = tab === 'pro' ? '' : 'none';
+  if (tab === 'core' && !inventarioCoreYaCargado) loadInventarioCore();
+}
+
+function refreshInventarioActivo() {
+  if (invTabActivo === 'pro') {
+    loadInventarioData();
+  } else {
+    inventarioCoreYaCargado = false;
+    loadInventarioCore();
+  }
+}
+
+async function loadInventarioCore() {
+  const tb = document.getElementById('tb-inventario-core');
+  tb.innerHTML = '<tr><td colspan="8" class="table-empty"><span class="spinner dark"></span> Cargando desde ERP CORE...</td></tr>';
+  try {
+    const r = await apiCall('CORE', 'inventarioCore', {});
+    if (!r.ok) throw new Error(r.mensaje || 'Sin respuesta del CORE');
+    datosInventarioCore = r.datos || [];
+    inventarioCoreYaCargado = true;
+    document.getElementById('badge-inv-core').textContent = datosInventarioCore.length;
+    document.getElementById('core-inv-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+    poblarFiltrosCategoriaCore();
+    renderTablaInventarioCore(datosInventarioCore);
+  } catch(e) {
+    tb.innerHTML = `<tr><td colspan="8" class="table-empty" style="color:var(--danger)"><i class="fas fa-triangle-exclamation"></i><br>${e.message}</td></tr>`;
+    toast('No se pudo cargar inventario del CORE: ' + e.message, 'error');
+  }
+}
+
+function poblarFiltrosCategoriaCore() {
+  const sel = document.getElementById('filterCategoriaCore');
+  const cats = [...new Set(datosInventarioCore.map(i =>
+    i.CATEGORIA || i.categoria || i.TIPO || i.tipo || ''
+  ).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todas las categorías</option>' +
+    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function filtrarInventarioCore() {
+  const q = (document.getElementById('searchInvCore').value || '').toLowerCase();
+  const cat = document.getElementById('filterCategoriaCore').value;
+  const filtrado = datosInventarioCore.filter(i => {
+    const texto = Object.values(i).join(' ').toLowerCase();
+    const catItem = i.CATEGORIA || i.categoria || i.TIPO || i.tipo || '';
+    return (!q || texto.includes(q)) && (!cat || catItem === cat);
+  });
+  renderTablaInventarioCore(filtrado);
+}
+
+function renderTablaInventarioCore(lista) {
+  const tb = document.getElementById('tb-inventario-core');
+  if (!lista.length) {
+    tb.innerHTML = '<tr><td colspan="8" class="table-empty"><i class="fas fa-box-open"></i><br>Sin resultados</td></tr>';
+    return;
+  }
+  tb.innerHTML = lista.map(i => {
+    // Normalizar campos (el CORE puede usar distintos nombres de columna)
+    const id       = i.ID_ITEM || i.id || i.ID || i.CODIGO || '—';
+    const codigo   = i.CODIGO || i.codigo || i.SKU || i.sku || id;
+    const desc     = i.DESCRIPCION || i.descripcion || i.NOMBRE || i.nombre || i.ITEM || '—';
+    const cat      = i.CATEGORIA || i.categoria || i.TIPO || i.tipo || '—';
+    const bodega   = i.BODEGA || i.bodega || i.UBICACION || i.ubicacion || '—';
+    const unidad   = i.UNIDAD_MEDIDA || i.unidad || i.UNIDAD || '—';
+    const stock    = parseFloat(i.CANTIDAD || i.cantidad || i.STOCK || i.stock || 0);
+    const precio   = parseFloat(i.PRECIO_UNITARIO || i.precio || i.PRECIO || 0);
+    const estado   = i.ESTADO || i.estado || 'Activo';
+    const estadoCls = estado.toLowerCase().includes('activ') ? 'badge-success' :
+                      estado.toLowerCase().includes('inactiv') ? 'badge-neutral' : 'badge-info';
+    return `<tr>
+      <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">${codigo}</td>
+      <td>${desc}</td>
+      <td><span class="badge badge-info">${cat}</span></td>
+      <td>${bodega}</td>
+      <td style="color:var(--text-muted)">${unidad}</td>
+      <td><strong style="color:${stock<=0?'var(--danger)':stock<5?'var(--warning)':'var(--success)'}">${stock.toLocaleString('es-CO')}</strong></td>
+      <td>$${formatNum(precio)}</td>
+      <td><span class="badge ${estadoCls}">${estado}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 // ============================================================
