@@ -2,8 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ERP INVENTARIO PRO — Conectado al ERP CORE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ERP INV"/>
+<meta name="theme-color" content="#0f1f5c"/>
+<title>Nexora ERP — Grupo WEDM</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <style>
@@ -36,7 +41,7 @@ ul{list-style:none}
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 50%,var(--teal) 100%);display:flex;align-items:center;justify-content:center;animation:fadeIn .5s ease}
 .login-bg-pattern{position:absolute;inset:0;overflow:hidden;opacity:.06;background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);background-size:20px 20px}
-.login-card{position:relative;z-index:1;background:var(--white);border-radius:20px;padding:48px 44px;width:420px;box-shadow:var(--shadow-lg);animation:slideUp .5s cubic-bezier(.4,0,.2,1)}
+.login-card{position:relative;z-index:1;background:var(--white);border-radius:24px;padding:36px 36px 32px;width:420px;box-shadow:var(--shadow-lg);animation:slideUp .5s cubic-bezier(.4,0,.2,1)}
 .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
 .login-logo-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--navy),var(--teal));display:flex;align-items:center;justify-content:center;color:white;font-size:22px;box-shadow:0 4px 16px rgba(13,148,136,.35)}
 .login-logo h1{font-size:20px;font-weight:800;color:var(--navy);line-height:1.1}
@@ -48,6 +53,7 @@ ul{list-style:none}
 .form-group .input-wrap{position:relative}
 .form-group .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);background:var(--bg);transition:border-color var(--trans),box-shadow var(--trans)}
+.input-wrap input{padding-left:42px!important}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12);background:white;outline:none}
 .form-group select,.form-group textarea{padding-left:14px}
 .form-group textarea{resize:vertical;min-height:80px}
@@ -234,13 +240,209 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
 .source-badge.core{background:#ede9fe;color:#7c3aed}
 .core-readonly-note{display:flex;align-items:center;gap:8px;background:#f0f4ff;border:1px solid #c7d2fe;border-radius:var(--radius-sm);padding:10px 16px;font-size:12px;color:#4338ca;margin-bottom:14px}
 
-/* RESPONSIVE */
+/* ============================================================
+   MOBILE APK — diseño nativo para celular
+   ============================================================ */
+
+/* PWA: pantalla completa, sin barras del navegador */
+@media(display-mode:standalone){
+  body{overscroll-behavior:none}
+}
+
+/* ── Viewport safe areas (notch / home indicator) ── */
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+  --bottom-nav-h:64px;
+}
+
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .topbar,.main-content{left:0;margin-left:0}
-  .form-grid{grid-template-columns:1fr}
-  .kpi-grid{grid-template-columns:1fr 1fr}
+
+  /* ── LOGIN ── */
+  .login-card{
+    width:100%;max-width:100%;border-radius:24px 24px 0 0;
+    position:fixed;bottom:0;left:0;right:0;
+    padding:32px 24px calc(24px + var(--safe-bot));
+    animation:slideUp .35s cubic-bezier(.4,0,.2,1);
+    max-height:92vh;overflow-y:auto;
+  }
+  #loginScreen{align-items:flex-end}
+
+  /* ── SIDEBAR → oculto, reemplazado por bottom nav ── */
+  .sidebar{display:none!important}
+
+  /* ── TOPBAR ── */
+  .topbar{
+    left:0!important;margin-left:0!important;
+    padding:0 16px;
+    padding-top:var(--safe-top);
+    height:calc(var(--topbar-h) + var(--safe-top));
+  }
+  .topbar-title{font-size:16px}
+  .topbar-right .btn{display:none} /* ocultar botones extra topbar en mobile */
+
+  /* ── MAIN CONTENT ── */
+  .main-content{
+    margin-left:0!important;
+    margin-top:calc(var(--topbar-h) + var(--safe-top))!important;
+    height:calc(100vh - var(--topbar-h) - var(--safe-top) - var(--bottom-nav-h) - var(--safe-bot))!important;
+    padding:16px 14px 8px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* ── BOTTOM NAV (reemplaza sidebar) ── */
+  .bottom-nav{
+    display:flex!important;
+    position:fixed;bottom:0;left:0;right:0;z-index:200;
+    height:calc(var(--bottom-nav-h) + var(--safe-bot));
+    padding-bottom:var(--safe-bot);
+    background:var(--navy);
+    box-shadow:0 -4px 24px rgba(15,31,92,.22);
+    align-items:stretch;
+  }
+  .bnav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;color:rgba(255,255,255,.5);font-size:10px;font-weight:600;
+    cursor:pointer;transition:all .18s;padding:6px 2px;
+    border-top:2.5px solid transparent;
+    -webkit-tap-highlight-color:transparent;
+    letter-spacing:.02em;
+  }
+  .bnav-item i{font-size:19px;transition:transform .18s}
+  .bnav-item.active{color:var(--teal-light);border-top-color:var(--teal-light)}
+  .bnav-item.active i{transform:translateY(-2px)}
+  .bnav-item:active{background:rgba(255,255,255,.06)}
+
+  /* ── FAB (botón nuevo item flotante) ── */
+  .fab{
+    display:flex!important;
+    position:fixed;right:18px;
+    bottom:calc(var(--bottom-nav-h) + var(--safe-bot) + 14px);
+    width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(135deg,var(--teal),var(--navy-light));
+    color:white;font-size:22px;
+    align-items:center;justify-content:center;
+    box-shadow:0 4px 20px rgba(13,148,136,.45);
+    z-index:190;transition:transform .18s,box-shadow .18s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fab:active{transform:scale(.93)}
+
+  /* ── VIEW HEADER ── */
+  .view-header{
+    flex-direction:column;align-items:flex-start;margin-bottom:14px;
+  }
+  .view-header h2{font-size:18px}
+  /* ocultar botones de acción del header en mobile (reemplazados por FAB) */
+  .view-header .btn-primary{display:none}
+
+  /* ── KPI GRID ── */
+  .kpi-grid{
+    grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;
+  }
+  .kpi-card{padding:14px 12px;gap:10px}
+  .kpi-icon{width:38px;height:38px;font-size:16px;border-radius:10px}
+  .kpi-data p{font-size:20px}
+  .kpi-data span{font-size:11px}
+
+  /* ── TOOLBAR ── */
+  .toolbar{gap:8px;margin-bottom:12px}
+  .toolbar select{font-size:13px;padding:8px 10px}
+
+  /* ── TABLAS → CARDS en mobile ── */
+  .table-responsive{overflow-x:unset}
+  table,thead,tbody,th,td,tr{display:block}
+  thead{display:none} /* ocultar headers de tabla */
+  tbody tr{
+    background:var(--surface);border-radius:var(--radius);
+    margin-bottom:10px;border:1px solid var(--border);
+    box-shadow:var(--shadow);padding:12px 14px;
+    position:relative;display:flex;flex-wrap:wrap;gap:4px 12px;
+    align-items:center;
+  }
+  tbody tr:hover{background:var(--surface)}
+  tbody td{
+    padding:2px 0;border:none;font-size:13px;
+    display:flex;align-items:center;gap:6px;
+  }
+  /* Primera celda = título principal de la card */
+  tbody td:first-child{
+    width:100%;font-size:14px;font-weight:700;
+    color:var(--navy);padding-bottom:6px;
+    border-bottom:1px solid var(--border);margin-bottom:4px;
+  }
+  /* Celda de acciones al fondo derecho */
+  tbody td:last-child{
+    position:absolute;top:12px;right:12px;
+    width:auto;padding:0;
+  }
+  /* Etiquetas de datos en las cards */
+  tbody td[data-label]::before{
+    content:attr(data-label)': ';
+    font-size:10px;font-weight:700;text-transform:uppercase;
+    color:var(--text-muted);letter-spacing:.04em;min-width:56px;
+  }
+  .table-container{background:transparent;border:none;box-shadow:none}
+  .table-empty{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:32px 20px}
+
+  /* ── MODALES → Bottom Sheet ── */
+  .modal-overlay{
+    align-items:flex-end!important;padding:0!important;
+  }
+  .modal,.modal-lg{
+    max-width:100%!important;width:100%!important;
+    border-radius:20px 20px 0 0!important;
+    max-height:92vh!important;
+    padding-bottom:var(--safe-bot);
+    animation:sheetUp .3s cubic-bezier(.4,0,.2,1)!important;
+  }
+  @keyframes sheetUp{
+    from{opacity:0;transform:translateY(100%)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  /* Handle visual del sheet */
+  .modal-header::before{
+    content:'';display:block;position:absolute;
+    top:8px;left:50%;transform:translateX(-50%);
+    width:36px;height:4px;border-radius:2px;
+    background:var(--border);
+  }
+  .modal-header{position:relative;padding-top:22px}
+  .modal-body{padding:16px 20px}
+  .modal-footer{padding:12px 20px calc(12px + var(--safe-bot))}
+
+  /* ── FORM GRID ── */
+  .form-grid{grid-template-columns:1fr!important}
+  .form-grid .col-full{grid-column:1/-1}
+
+  /* ── TABS INVENTARIO ── */
+  .inv-tabs{gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .inv-tab{padding:10px 14px;font-size:12px;white-space:nowrap}
+
+  /* ── TOASTS ── */
+  #toastContainer{
+    top:auto;
+    bottom:calc(var(--bottom-nav-h) + var(--safe-bot) + 10px);
+    right:10px;left:10px;
+  }
+  .toast{max-width:100%}
+
+  /* ── ACCIONES en cards: botones más grandes ── */
+  .btn-icon{width:36px;height:36px;font-size:15px}
+
+  /* ── Botón actualizar en view-header → se mueve al topbar ── */
+  .btn-secondary.refresh-btn{display:flex!important}
+
+  /* ── Ocultar texto en botones small de topbar ── */
+  .topbar .btn span{display:none}
+  .topbar .btn{padding:8px 10px}
+}
+
+/* Desktop: ocultar bottom-nav y fab */
+@media(min-width:769px){
+  .bottom-nav{display:none!important}
+  .fab{display:none!important}
 }
 </style>
 </head>
@@ -249,33 +451,63 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-bg-pattern"></div>
+
+  <!-- Branding flotante arriba -->
+  <div style="position:absolute;top:0;left:0;right:0;padding:32px 28px 0;display:flex;align-items:center;gap:14px">
+    <div style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.12);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="2" width="9" height="9" rx="2.5" fill="white" opacity=".9"/>
+        <rect x="13" y="2" width="9" height="9" rx="2.5" fill="white" opacity=".6"/>
+        <rect x="2" y="13" width="9" height="9" rx="2.5" fill="white" opacity=".6"/>
+        <rect x="13" y="13" width="9" height="9" rx="2.5" fill="white" opacity=".35"/>
+      </svg>
+    </div>
+    <div>
+      <p style="font-size:15px;font-weight:800;color:white;letter-spacing:-.01em">NEXORA ERP</p>
+      <p style="font-size:10px;color:rgba(255,255,255,.5);font-weight:500;letter-spacing:.06em;text-transform:uppercase">Gestión · Inventario · WEDM</p>
+    </div>
+  </div>
+
   <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-icon"><i class="fas fa-boxes"></i></div>
-      <div>
-        <h1>ERP INVENTARIO</h1>
-        <span>Conectado al ERP CORE</span>
+    <!-- Handle bar (mobile sheet) -->
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 28px"></div>
+
+    <h2 class="login-title" style="font-size:24px;letter-spacing:-.02em">Iniciar sesión</h2>
+    <p class="login-sub" style="margin-bottom:28px">Accede a tu espacio de trabajo</p>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Usuario</label>
+      <input type="text" id="loginUser" placeholder="tu.usuario" autocomplete="username"
+        style="width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s,box-shadow .2s"
+        onfocus="this.style.borderColor='var(--teal)';this.style.boxShadow='0 0 0 3px rgba(13,148,136,.1)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"/>
+    </div>
+
+    <div class="form-group" style="margin-bottom:22px">
+      <label style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Contraseña</label>
+      <div style="position:relative">
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+          style="width:100%;padding:13px 44px 13px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s,box-shadow .2s"
+          onfocus="this.style.borderColor='var(--teal)';this.style.boxShadow='0 0 0 3px rgba(13,148,136,.1)'"
+          onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"/>
+        <button type="button" onclick="togglePass()" tabindex="-1"
+          style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:4px">
+          <i class="fas fa-eye" id="passEyeIcon"></i>
+        </button>
       </div>
     </div>
-    <h2 class="login-title">Bienvenido</h2>
-    <p class="login-sub">Ingresa tus credenciales para continuar</p>
-    <div class="form-group">
-      <label>Usuario</label>
-      <div class="input-wrap"><i class="fas fa-user"></i>
-        <input type="text" id="loginUser" placeholder="admin" autocomplete="username"/>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <div class="input-wrap"><i class="fas fa-lock"></i>
-        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
-      </div>
-    </div>
-    <button class="btn-login" onclick="doLogin()">
-      <span id="loginBtnText">Ingresar</span>
+
+    <button class="btn-login" onclick="doLogin()" style="border-radius:10px;letter-spacing:.01em">
+      <span id="loginBtnText">Continuar</span>
     </button>
-    <div class="login-error" id="loginError"><i class="fas fa-circle-exclamation"></i><span id="loginErrorMsg"></span></div>
-    <p class="login-version">ERP INVENTARIO PRO v1.0.0</p>
+
+    <div class="login-error" id="loginError" style="margin-top:14px">
+      <i class="fas fa-circle-exclamation"></i><span id="loginErrorMsg"></span>
+    </div>
+
+    <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:24px;opacity:.6">
+      Nexora ERP v2.1 · Grupo WEDM · 2025
+    </p>
   </div>
 </div>
 
@@ -286,8 +518,8 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="fas fa-boxes"></i></div>
       <div class="brand-text">
-        <h2>ERP INVENTARIO</h2>
-        <span>Stock & Compras</span>
+        <h2>Nexora ERP</h2>
+        <span>Inventario · WEDM</span>
       </div>
     </div>
     <div class="sidebar-user">
@@ -320,6 +552,7 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
+      <button id="topbarRefreshBtn" class="btn btn-secondary" style="display:none;padding:8px 10px" onclick="refreshVistaActual()" title="Actualizar"><i class="fas fa-rotate"></i></button>
       <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
     </div>
     <div class="topbar-right">
@@ -554,6 +787,39 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
 <div id="toastContainer"></div>
 
 <!-- MODAL: ITEM INVENTARIO -->
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav" style="display:none">
+  <div class="bnav-item active" id="bnav-dashboard" onclick="navTo('dashboard')">
+    <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+  </div>
+  <div class="bnav-item" id="bnav-inventario" onclick="navTo('inventario')">
+    <i class="fas fa-box"></i><span>Inventario</span>
+  </div>
+  <div class="bnav-item" id="bnav-movimientos" onclick="navTo('movimientos')">
+    <i class="fas fa-exchange-alt"></i><span>Movimientos</span>
+  </div>
+  <div class="bnav-item" id="bnav-solicitudes" onclick="navTo('solicitudes')">
+    <i class="fas fa-file-circle-plus"></i><span>Solicitudes</span>
+  </div>
+  <div class="bnav-item" id="bnav-mas" onclick="toggleMasMenu()">
+    <i class="fas fa-grid-2"></i><span>Más</span>
+  </div>
+</nav>
+<div id="masMenuOverlay" style="display:none;position:fixed;inset:0;z-index:195;background:rgba(0,0,0,.4)" onclick="toggleMasMenu()"></div>
+<div id="masMenu" style="display:none;position:fixed;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:0;right:0;z-index:196;background:var(--surface);border-radius:20px 20px 0 0;padding:16px 16px 8px;box-shadow:0 -4px 32px rgba(15,31,92,.18)">
+  <p style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);letter-spacing:.08em;margin-bottom:12px">Más módulos</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div onclick="navTo('ordenescompra');toggleMasMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--navy)"><i class="fas fa-file-invoice" style="color:var(--blue);width:18px"></i> Órdenes OC</div>
+    <div onclick="navTo('traslados');toggleMasMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--navy)"><i class="fas fa-arrows-left-right" style="color:var(--teal);width:18px"></i> Traslados</div>
+    <div onclick="navTo('ajustes');toggleMasMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--navy)"><i class="fas fa-sliders" style="color:var(--warning);width:18px"></i> Ajustes Stock</div>
+    <div onclick="navTo('salidas');toggleMasMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--navy)"><i class="fas fa-truck-ramp-box" style="color:var(--danger);width:18px"></i> Salidas OT</div>
+  </div>
+  <div onclick="doLogout();toggleMasMenu()" style="display:flex;align-items:center;gap:10px;padding:12px 14px;margin-top:10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--danger)"><i class="fas fa-right-from-bracket" style="width:18px"></i> Cerrar sesión</div>
+</div>
+<button class="fab" id="fabBtn" style="display:none" onclick="fabAccion()">
+  <i class="fas fa-plus"></i>
+</button>
+
 <div class="modal-overlay" id="modalItem">
   <div class="modal">
     <div class="modal-header">
@@ -845,6 +1111,13 @@ function apiCall(modulo, accion, datos = {}) {
 // ============================================================
 // AUTH
 // ============================================================
+async function togglePass() {
+  const inp = document.getElementById('loginPass');
+  const ico = document.getElementById('passEyeIcon');
+  if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fas fa-eye-slash'; }
+  else { inp.type = 'password'; ico.className = 'fas fa-eye'; }
+}
+
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
@@ -884,6 +1157,7 @@ function iniciarApp() {
   document.getElementById('userName').textContent = sesion.empleado || sesion.username || '—';
   document.getElementById('userRol').textContent = sesion.rol || '—';
   document.getElementById('userAvatar').textContent = ((sesion.empleado || sesion.username || 'U')[0]).toUpperCase();
+  setTimeout(initMobileUI, 100);
 }
 
 function doLogout() {
@@ -904,7 +1178,8 @@ const viewTitles = {
   traslados: 'Traslados', ajustes: 'Ajustes de Inventario',
   entradas: 'Entradas', salidas: 'Salidas'
 };
-function navTo(view) {
+async function navTo(view) {
+  if (window._navToMobileHook) window._navToMobileHook(view);
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
@@ -1174,7 +1449,7 @@ function openModalItem() {
   openModal('modalItem');
 }
 
-function editarItem(item) {
+async function editarItem(item) {
   document.getElementById('itemId').value = item.ID_ITEM;
   document.getElementById('modalItemTitle').textContent = 'Editar Item';
   document.getElementById('itemCodigo').value = item.CODIGO || '';
@@ -1264,7 +1539,7 @@ function filtrarMovimientos() {
   ));
 }
 
-function openModalMovimiento() {
+async function openModalMovimiento() {
   poblarSelectItems();
   document.getElementById('movItem').value = '';
   document.getElementById('movTipo').value = 'ENTRADA';
@@ -1340,7 +1615,7 @@ function filtrarSolicitudes() {
   ));
 }
 
-function openModalSolicitud() {
+async function openModalSolicitud() {
   poblarSelectItems();
   document.getElementById('solItem').value = '';
   document.getElementById('solCantidad').value = '';
@@ -1542,7 +1817,7 @@ function openModalTraslado() {
   openModal('modalTraslado');
 }
 
-function actualizarBodegasTraslado(idItem) {
+async function actualizarBodegasTraslado(idItem) {
   if (!idItem) return;
   const item = datosInventario.find(i => i.ID_ITEM === idItem);
   if (item?.BODEGA) document.getElementById('traOrigen').value = item.BODEGA;
@@ -1590,7 +1865,7 @@ async function loadAjustes() {
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-function openModalAjuste() {
+async function openModalAjuste() {
   poblarSelectItems();
   document.getElementById('ajuItem').value = '';
   document.getElementById('ajuTipo').value = 'Positivo';
@@ -1648,7 +1923,7 @@ async function loadSalidas() {
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-function openModalSalida() {
+async function openModalSalida() {
   document.getElementById('salOT').value = '';
   document.getElementById('salResp').value = '';
   document.getElementById('salTotal').value = '';
@@ -1690,7 +1965,7 @@ function switchInvTab(tab) {
   if (tab === 'core' && !inventarioCoreYaCargado) loadInventarioCore();
 }
 
-function refreshInventarioActivo() {
+async function refreshInventarioActivo() {
   if (invTabActivo === 'pro') {
     loadInventarioData();
   } else {
@@ -1808,6 +2083,88 @@ function hoy() {
 
 // Inicializar fecha actual en campos de fecha
 document.querySelectorAll('input[type="date"]').forEach(i => { if (!i.value) i.value = hoy(); });
+
+// ============================================================
+// MOBILE — Bottom Nav, FAB, Menú Más
+// ============================================================
+
+const FAB_ACCIONES = {
+  'dashboard':    null,
+  'inventario':   () => openModalItem(),
+  'movimientos':  () => openModalMovimiento(),
+  'solicitudes':  () => openModalSolicitud(),
+  'ordenescompra':() => openModalOC(),
+  'traslados':    () => openModalTraslado(),
+  'ajustes':      () => openModalAjuste(),
+  'salidas':      () => openModalSalida(),
+};
+
+const BNAV_VIEWS = ['dashboard','inventario','movimientos','solicitudes'];
+
+function isMobile() { return window.innerWidth <= 768; }
+
+function actualizarBottomNav(viewId) {
+  if (!isMobile()) return;
+  // Mostrar/ocultar bottom nav y FAB
+  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById('topbarRefreshBtn').style.display = 'flex';
+
+  // Resaltar tab activo
+  BNAV_VIEWS.forEach(v => {
+    const el = document.getElementById('bnav-' + v);
+    if (el) el.classList.toggle('active', v === viewId);
+  });
+  const masEl = document.getElementById('bnav-mas');
+  if (masEl) masEl.classList.toggle('active', !BNAV_VIEWS.includes(viewId));
+
+  // FAB: mostrar si la vista tiene acción
+  const fab = document.getElementById('fabBtn');
+  if (fab) fab.style.display = FAB_ACCIONES[viewId] ? 'flex' : 'none';
+}
+
+function fabAccion() {
+  const vistaActual = document.querySelector('.view.active')?.id?.replace('view-', '');
+  const accion = FAB_ACCIONES[vistaActual];
+  if (accion) accion();
+}
+
+function toggleMasMenu() {
+  const menu = document.getElementById('masMenu');
+  const overlay = document.getElementById('masMenuOverlay');
+  const abierto = menu.style.display !== 'none';
+  menu.style.display = abierto ? 'none' : 'block';
+  overlay.style.display = abierto ? 'none' : 'block';
+}
+
+function refreshVistaActual() {
+  const vistaActual = document.querySelector('.view.active')?.id?.replace('view-', '');
+  if (!vistaActual) return;
+  const acciones = {
+    'dashboard':    loadDashboard,
+    'inventario':   loadInventarioData,
+    'movimientos':  loadMovimientosData,
+    'solicitudes':  loadSolicitudesData,
+    'ordenescompra':loadOCData,
+    'traslados':    loadTrasladosData,
+    'ajustes':      loadAjustesData,
+    'salidas':      loadSalidasData,
+  };
+  if (acciones[vistaActual]) acciones[vistaActual]();
+}
+
+// Patch navTo para actualizar bottom nav en cada navegación
+const _navToOriginal = navTo;
+// Override navTo para mobile
+window._navToMobileHook = function(viewId) { actualizarBottomNav(viewId); };
+
+// Inicializar mobile si corresponde
+async function initMobileUI() {
+  if (!isMobile()) return;
+  actualizarBottomNav('dashboard');
+}
+
+// Llamar al iniciar app
+const _iniciarAppOrig = iniciarApp;
 
 // ============================================================
 // RESTAURAR SESIÓN AL RECARGAR LA PÁGINA
