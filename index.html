@@ -687,11 +687,14 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group col-full"><label>Item *</label>
-          <select id="traItem"><option value="">Seleccionar item...</option></select></div>
-        <div class="form-group"><label>Bodega Origen *</label><input type="text" id="traOrigen" placeholder="Bodega de origen"/></div>
-        <div class="form-group"><label>Bodega Destino *</label><input type="text" id="traDestino" placeholder="Bodega de destino"/></div>
+          <select id="traItem" onchange="actualizarBodegasTraslado(this.value)"><option value="">Seleccionar item...</option></select></div>
+        <div class="form-group"><label>Bodega Origen *</label>
+          <select id="traOrigen" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar bodega...</option></select></div>
+        <div class="form-group"><label>Bodega Destino *</label>
+          <select id="traDestino" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar bodega...</option></select></div>
         <div class="form-group"><label>Cantidad *</label><input type="number" id="traCantidad" placeholder="0" min="0.01" step="0.01"/></div>
-        <div class="form-group"><label>Responsable *</label><input type="text" id="traResponsable" placeholder="Nombre responsable"/></div>
+        <div class="form-group"><label>Responsable * <span style="font-size:10px;color:var(--teal)">(ERP CORE)</span></label>
+          <select id="traResponsable" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar...</option></select></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -930,7 +933,7 @@ async function loadDashboard() {
     document.getElementById('kpi-valor').textContent = '$' + formatNum(d.valorTotal);
     document.getElementById('kpi-alertas').textContent = d.alertas ?? 0;
     document.getElementById('kpi-solicitudes').textContent = d.solicitudesPendientes ?? 0;
-    document.getElementById('kpi-oc').textContent = d.ordenesPendientes ?? 0;
+    document.getElementById('kpi-oc').textContent = d.ordenesAbiertas ?? d.ordenesPendientes ?? 0;
     // Alertas badge
     if ((d.alertas ?? 0) > 0) {
       document.getElementById('alertaBadge').style.display = 'inline';
@@ -948,7 +951,7 @@ async function loadDashboard() {
     const tbM = document.getElementById('tb-movrecientes');
     if (d.ultimosMovimientos && d.ultimosMovimientos.length > 0) {
       tbM.innerHTML = d.ultimosMovimientos.map(m => `
-        <tr><td class="td-bold">${m.ITEM}</td>
+        <tr><td class="td-bold">${m._NOMBRE_ITEM||m.ID_ITEM||'—'}</td>
         <td><span class="badge ${m.TIPO==='ENTRADA'?'badge-success':m.TIPO==='SALIDA'?'badge-danger':'badge-info'}">${m.TIPO}</span></td>
         <td>${m.CANTIDAD}</td><td>${fmtFecha(m.FECHA)}</td></tr>`).join('');
     } else tbM.innerHTML = '<tr><td colspan="4" class="table-empty">Sin movimientos</td></tr>';
@@ -1017,9 +1020,13 @@ function filtrarInventario() {
   renderInventario(filtrados);
 }
 
-function poblarSelectItems() {
+function poblarSelectItems(extraIds = []) {
   const opts = '<option value="">Seleccionar item...</option>' +
-    datosInventario.map(i => `<option value="${i.ID_ITEM}">${i.CODIGO} - ${i.DESCRIPCION}</option>`).join('');
+    datosInventario.map(i => {
+      const stock = i.CANTIDAD ?? i.STOCK_ACTUAL ?? 0;
+      const alerta = parseFloat(stock) <= 0 ? ' ⚠️' : '';
+      return `<option value="${i.ID_ITEM}">${i.CODIGO} — ${i.DESCRIPCION} (Stock: ${stock}${alerta})</option>`;
+    }).join('');
   ['movItem','solItem','traItem','ajuItem'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
@@ -1238,12 +1245,12 @@ function renderMovimientos(movs) {
     const tipoCls = m.TIPO === 'ENTRADA' ? 'badge-success' : m.TIPO === 'SALIDA' ? 'badge-danger' : 'badge-info';
     return `<tr>
       <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">${m.ID_MOVIMIENTO||''}</td>
-      <td>${m._NOMBRE_ITEM || m.ITEM}</td>
+      <td>${m._NOMBRE_ITEM||mapaItems[m.ID_ITEM]||m.ID_ITEM||'—'}</td>
       <td><span class="badge ${tipoCls}">${m.TIPO}</span></td>
       <td>${m.CANTIDAD}</td>
       <td>${fmtFecha(m.FECHA)}</td>
       <td>${m.RESPONSABLE||'—'}</td>
-      <td>${m.OT||m.REFERENCIA||'—'}</td>
+      <td>${m.REFERENCIA||m.OT||'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -1252,7 +1259,7 @@ function filtrarMovimientos() {
   const q = document.getElementById('searchMov').value.toLowerCase();
   const tipo = document.getElementById('filterTipoMov').value;
   renderMovimientos(datosMovimientos.filter(m =>
-    (q === '' || (m.ITEM||'').toLowerCase().includes(q) || (m.RESPONSABLE||'').toLowerCase().includes(q)) &&
+    (q === '' || (m._NOMBRE_ITEM||m.ID_ITEM||'').toLowerCase().includes(q) || (m.RESPONSABLE||'').toLowerCase().includes(q)) &&
     (tipo === '' || m.TIPO === tipo)
   ));
 }
@@ -1265,14 +1272,14 @@ function openModalMovimiento() {
 
 async function guardarMovimiento() {
   const datos = {
-    ITEM: document.getElementById('movItem').value,
+    ID_ITEM: document.getElementById('movItem').value,
     TIPO: document.getElementById('movTipo').value,
     CANTIDAD: parseFloat(document.getElementById('movCantidad').value),
     RESPONSABLE: (() => { const s = document.getElementById('movResponsable'); return s.tagName==='SELECT' ? s.options[s.selectedIndex]?.text?.split(' —')[0] || s.value : s.value; })(),
-    OT: document.getElementById('movOT').value.trim(),
+    REFERENCIA: document.getElementById('movOT').value.trim(),
     FECHA: document.getElementById('movFecha').value,
   };
-  if (!datos.ITEM || !datos.CANTIDAD || !datos.RESPONSABLE) { toast('Completa todos los campos requeridos', 'warning'); return; }
+  if (!datos.ID_ITEM || !datos.CANTIDAD || !datos.RESPONSABLE) { toast('Completa todos los campos requeridos', 'warning'); return; }
   try {
     const r = await apiCall('MOVIMIENTOS', 'registrar', datos);
     if (!r.ok) throw new Error(r.mensaje);
@@ -1306,7 +1313,7 @@ function renderSolicitudes(sols) {
       <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">${s.ID_SOLICITUD}</td>
       <td>${fmtFecha(s.FECHA)}</td>
       <td>${s.SOLICITANTE}</td>
-      <td>${mapaItems[s.ITEM]||s.ITEM}</td>
+      <td>${mapaItems[s.ID_ITEM]||s.ID_ITEM}</td>
       <td>${s.CANTIDAD}</td>
       <td><span class="badge status-${est}">${s.ESTADO}</span></td>
       <td>
@@ -1323,7 +1330,7 @@ function filtrarSolicitudes() {
   const q = document.getElementById('searchSol').value.toLowerCase();
   const est = document.getElementById('filterEstadoSol').value;
   renderSolicitudes(datosSolicitudes.filter(s =>
-    (q === '' || (s.SOLICITANTE||'').toLowerCase().includes(q) || (s.ITEM||'').toLowerCase().includes(q)) &&
+    (q === '' || (s.SOLICITANTE||'').toLowerCase().includes(q) || (s.ID_ITEM||'').toLowerCase().includes(q)) &&
     (est === '' || s.ESTADO === est)
   ));
 }
@@ -1338,12 +1345,12 @@ function openModalSolicitud() {
 
 async function guardarSolicitud() {
   const datos = {
-    ITEM: document.getElementById('solItem').value,
+    ID_ITEM: document.getElementById('solItem').value,
     CANTIDAD: parseFloat(document.getElementById('solCantidad').value),
     SOLICITANTE: document.getElementById('solSolicitante').value.trim(),
     OBSERVACIONES: document.getElementById('solObs').value.trim(),
   };
-  if (!datos.ITEM || !datos.CANTIDAD || !datos.SOLICITANTE) { toast('Completa los campos requeridos', 'warning'); return; }
+  if (!datos.ID_ITEM || !datos.CANTIDAD || !datos.SOLICITANTE) { toast('Completa los campos requeridos', 'warning'); return; }
   try {
     const r = await apiCall('SOLICITUDES', 'crear', datos);
     if (!r.ok) throw new Error(r.mensaje);
@@ -1418,7 +1425,7 @@ function openModalOC() {
 }
 
 function addLineaOC() {
-  ocLineas.push({ ITEM: '', CANTIDAD: 1, VALOR_UNITARIO: 0 });
+  ocLineas.push({ ID_ITEM: '', CANTIDAD: 1, VALOR_UNITARIO: 0 });
   renderOCDetalle();
 }
 
@@ -1434,8 +1441,8 @@ function renderOCDetalle() {
   }
   tb.innerHTML = ocLineas.map((l, idx) => `
     <tr>
-      <td style="padding:6px"><select onchange="ocUpdateLinea(${idx},'ITEM',this.value)" style="width:100%;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
-        <option value="">Seleccionar...</option>${optsItems.replace(`value="${l.ITEM}"`,`value="${l.ITEM}" selected`)}</select></td>
+      <td style="padding:6px"><select onchange="ocUpdateLinea(${idx},'ID_ITEM',this.value)" style="width:100%;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+        <option value="">Seleccionar...</option>${optsItems.replace(`value="${l.ID_ITEM||''}"`,`value="${l.ID_ITEM||''}" selected`)}</select></td>
       <td style="padding:6px"><input type="number" value="${l.CANTIDAD}" min="0.01" step="0.01" onchange="ocUpdateLinea(${idx},'CANTIDAD',this.value)" style="width:80px;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px"/></td>
       <td style="padding:6px"><input type="number" value="${l.VALOR_UNITARIO}" min="0" onchange="ocUpdateLinea(${idx},'VALOR_UNITARIO',this.value)" style="width:100px;padding:6px;border:1.5px solid var(--border);border-radius:6px;font-size:12px"/></td>
       <td style="padding:6px;font-weight:600">$${formatNum((l.CANTIDAD||0)*(l.VALOR_UNITARIO||0))}</td>
@@ -1446,7 +1453,7 @@ function renderOCDetalle() {
 }
 
 function ocUpdateLinea(idx, campo, val) {
-  ocLineas[idx][campo] = campo === 'ITEM' ? val : parseFloat(val) || 0;
+  ocLineas[idx][campo] = campo === 'ID_ITEM' ? val : parseFloat(val) || 0;
   renderOCDetalle();
 }
 function removeLineaOC(idx) { ocLineas.splice(idx, 1); renderOCDetalle(); }
@@ -1506,7 +1513,7 @@ async function loadTraslados() {
     if (!datosTraslados.length) { tb.innerHTML = '<tr><td colspan="7" class="table-empty"><i class="fas fa-arrows-left-right"></i><br>Sin traslados</td></tr>'; return; }
     tb.innerHTML = [...datosTraslados].reverse().map(t => `<tr>
       <td class="td-bold">${t.ID_TRASLADO}</td>
-      <td>${mapaItems[t.ITEM]||t.ITEM}</td>
+      <td>${mapaItems[t.ID_ITEM]||t.ID_ITEM}</td>
       <td>${t.BODEGA_ORIGEN}</td><td>${t.BODEGA_DESTINO}</td>
       <td>${t.CANTIDAD}</td><td>${fmtFecha(t.FECHA)}</td><td>${t.RESPONSABLE}</td>
     </tr>`).join('');
@@ -1514,20 +1521,39 @@ async function loadTraslados() {
 }
 
 function openModalTraslado() {
-  ['traItem','traOrigen','traDestino','traResponsable'].forEach(id => document.getElementById(id).value = '');
+  poblarSelectItems(['traItem']);
+  // Poblar bodegas desde inventario existente
+  const bodegas = [...new Set(datosInventario.map(i=>(i.BODEGA||'').trim()).filter(Boolean))].sort();
+  ['traOrigen','traDestino'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Seleccionar bodega...</option>' +
+      bodegas.map(b=>`<option value="${b}">${b}</option>`).join('') +
+      '<option value="__otra__">✏️ Otra bodega...</option>';
+    sel.value = '';
+  });
   document.getElementById('traCantidad').value = '';
+  poblarSelectEmpleados('traResponsable');
   openModal('modalTraslado');
+}
+
+function actualizarBodegasTraslado(idItem) {
+  if (!idItem) return;
+  const item = datosInventario.find(i => i.ID_ITEM === idItem);
+  if (item?.BODEGA) document.getElementById('traOrigen').value = item.BODEGA;
 }
 
 async function guardarTraslado() {
   const datos = {
-    ITEM: document.getElementById('traItem').value,
+    ID_ITEM: document.getElementById('traItem').value,
     BODEGA_ORIGEN: document.getElementById('traOrigen').value.trim(),
     BODEGA_DESTINO: document.getElementById('traDestino').value.trim(),
     CANTIDAD: parseFloat(document.getElementById('traCantidad').value),
-    RESPONSABLE: document.getElementById('traResponsable').value.trim(),
+    RESPONSABLE: (() => { const s = document.getElementById('traResponsable'); return s.tagName==='SELECT' ? (s.options[s.selectedIndex]?.text?.split(' —')[0]||s.value) : s.value; })(),
   };
-  if (!datos.ITEM || !datos.BODEGA_ORIGEN || !datos.BODEGA_DESTINO || !datos.CANTIDAD) { toast('Completa todos los campos', 'warning'); return; }
+  if (datos.BODEGA_ORIGEN === '__otra__') datos.BODEGA_ORIGEN = prompt('Nombre de la bodega origen:') || '';
+  if (datos.BODEGA_DESTINO === '__otra__') datos.BODEGA_DESTINO = prompt('Nombre de la bodega destino:') || '';
+  if (!datos.ID_ITEM || !datos.BODEGA_ORIGEN || !datos.BODEGA_DESTINO || !datos.CANTIDAD) { toast('Completa todos los campos', 'warning'); return; }
+  if (datos.BODEGA_ORIGEN === datos.BODEGA_DESTINO) { toast('Origen y destino no pueden ser la misma bodega', 'warning'); return; }
   try {
     const r = await apiCall('TRASLADOS', 'crear', datos);
     if (!r.ok) throw new Error(r.mensaje);
@@ -1551,7 +1577,7 @@ async function loadAjustes() {
     if (!datosAjustes.length) { tb.innerHTML = '<tr><td colspan="6" class="table-empty"><i class="fas fa-sliders"></i><br>Sin ajustes</td></tr>'; return; }
     tb.innerHTML = [...datosAjustes].reverse().map(a => `<tr>
       <td class="td-bold">${a.ID_AJUSTE}</td>
-      <td>${mapaItems[a.ITEM]||a.ITEM}</td>
+      <td>${mapaItems[a.ID_ITEM]||a.ID_ITEM}</td>
       <td><span class="badge ${a.TIPO==='Positivo'?'badge-success':a.TIPO==='Negativo'?'badge-danger':'badge-info'}">${a.TIPO}</span></td>
       <td>${a.CANTIDAD}</td><td>${fmtFecha(a.FECHA)}</td><td>${a.MOTIVO}</td>
     </tr>`).join('');
@@ -1568,12 +1594,12 @@ function openModalAjuste() {
 
 async function guardarAjuste() {
   const datos = {
-    ITEM: document.getElementById('ajuItem').value,
+    ID_ITEM: document.getElementById('ajuItem').value,
     TIPO: document.getElementById('ajuTipo').value,
     CANTIDAD: parseFloat(document.getElementById('ajuCantidad').value),
     MOTIVO: document.getElementById('ajuMotivo').value.trim(),
   };
-  if (!datos.ITEM || !datos.CANTIDAD || !datos.MOTIVO) { toast('Completa todos los campos', 'warning'); return; }
+  if (!datos.ID_ITEM || !datos.CANTIDAD || !datos.MOTIVO) { toast('Completa todos los campos', 'warning'); return; }
   try {
     const r = await apiCall('AJUSTES', 'crear', datos);
     if (!r.ok) throw new Error(r.mensaje);
@@ -1609,7 +1635,7 @@ async function loadSalidas() {
     const data = r.datos || [];
     if (!data.length) { tb.innerHTML = '<tr><td colspan="5" class="table-empty">Sin salidas</td></tr>'; return; }
     tb.innerHTML = [...data].reverse().map(s => `<tr>
-      <td class="td-bold">${s.ID_SALIDA}</td><td>${s.OT}</td>
+      <td class="td-bold">${s.ID_SALIDA}</td><td>${s.ID_OT||s.OT||'—'}</td>
       <td>${fmtFecha(s.FECHA)}</td><td>${s.RESPONSABLE}</td><td>$${formatNum(s.TOTAL)}</td>
     </tr>`).join('');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
@@ -1625,12 +1651,12 @@ function openModalSalida() {
 
 async function guardarSalida() {
   const datos = {
-    OT: document.getElementById('salOT').value.trim(),
+    ID_OT: document.getElementById('salOT').value.trim(),
     RESPONSABLE: document.getElementById('salResp').value.trim(),
     TOTAL: parseFloat(document.getElementById('salTotal').value) || 0,
     FECHA: document.getElementById('salFecha').value,
   };
-  if (!datos.OT || !datos.RESPONSABLE) { toast('OT y Responsable son requeridos', 'warning'); return; }
+  if (!datos.ID_OT || !datos.RESPONSABLE) { toast('OT y Responsable son requeridos', 'warning'); return; }
   try {
     const r = await apiCall('ENTRADAS_SALIDAS', 'registrarSalida', datos);
     if (!r.ok) throw new Error(r.mensaje);
