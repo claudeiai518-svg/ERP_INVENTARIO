@@ -15,6 +15,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <style>
 :root {
   --navy:#1a73e8; --navy-mid:#1967d2; --navy-light:#185abc;
@@ -194,6 +196,31 @@ thead th.sortable::after{content:'↕';position:absolute;right:10px;top:50%;tran
 thead th.sortable.asc::after{content:'↑';opacity:1;color:var(--navy)}
 thead th.sortable.desc::after{content:'↓';opacity:1;color:var(--navy)}
 thead th.sortable.asc,thead th.sortable.desc{color:var(--navy);background:var(--info-bg)}
+
+
+/* ── QR / BARCODE ── */
+.qr-thumb{width:36px;height:36px;cursor:pointer;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.qr-thumb:hover{transform:scale(1.1);box-shadow:var(--shadow-md)}
+.qr-thumb img,.qr-thumb canvas,.qr-thumb svg{width:100%!important;height:100%!important}
+
+/* Modal etiqueta */
+.label-modal{background:var(--surface);border-radius:20px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:slideUp .25s ease}
+.label-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:20px;overflow-y:auto;max-height:55vh}
+.label-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative}
+.label-card .lc-code{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--navy);text-align:center;word-break:break-all}
+.label-card .lc-desc{font-size:11px;color:var(--text-muted);text-align:center;line-height:1.3}
+.label-card .lc-stock{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px}
+.label-type-toggle{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;padding:2px}
+.label-type-toggle button{padding:6px 16px;border-radius:18px;font-size:12px;font-weight:600;color:var(--text-muted);transition:all .15s}
+.label-type-toggle button.active{background:var(--navy);color:#fff}
+
+@media print {
+  body > *:not(#printArea){display:none!important}
+  #printArea{display:block!important;position:fixed;inset:0;background:#fff;padding:20px}
+  .print-label{display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1px solid #ccc;border-radius:8px;margin:6px;width:180px;vertical-align:top}
+  .print-label b{font-size:10px;font-family:monospace;word-break:break-all;text-align:center}
+  .print-label small{font-size:9px;color:#555;text-align:center}
+}
 
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:90;box-shadow:0 1px 3px rgba(60,64,67,.1)}
@@ -793,7 +820,7 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
         </div>
         <div class="table-container" id="invTablaContainer">
           <div class="table-responsive"><table>
-            <thead><tr><th style="width:36px"><input type="checkbox" class="cb-row" id="cbTodos" onchange="toggleTodosCheckbox(this)" title="Seleccionar todos"></th><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th style="width:36px"><input type="checkbox" class="cb-row" id="cbTodos" onchange="toggleTodosCheckbox(this)" title="Seleccionar todos"></th><th style="width:50px">QR</th><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tb-inventario"><tr><td colspan="10" class="table-empty"><span class="spinner dark"></span></td></tr></tbody>
           </table></div>
         </div>
@@ -1334,11 +1361,41 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
 <!-- BARRA DE ACCIONES MASIVAS -->
 <div class="bulk-bar" id="bulkBar">
   <span id="bulkCount">0 items seleccionados</span>
+  <button class="bulk-btn" onclick="bulkEtiquetas()"><i class="fas fa-qrcode"></i> Etiquetas</button>
   <button class="bulk-btn" onclick="bulkMovimiento()"><i class="fas fa-right-left"></i> Mover</button>
   <button class="bulk-btn" onclick="bulkExportar()"><i class="fas fa-file-excel"></i> Exportar</button>
   <button class="bulk-btn" onclick="bulkSolicitud()"><i class="fas fa-cart-plus"></i> Solicitar</button>
   <button class="bulk-btn danger" onclick="bulkEliminar()"><i class="fas fa-trash"></i> Eliminar</button>
   <button onclick="limpiarSeleccion()" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px"><i class="fas fa-times"></i></button>
+</div>
+
+
+<!-- MODAL ETIQUETAS QR / BARCODE -->
+<div class="modal-overlay" id="modalEtiquetas" style="z-index:550">
+  <div class="label-modal">
+    <div class="modal-header">
+      <div>
+        <h3><i class="fas fa-qrcode"></i> Etiquetas — QR / Código de barras</h3>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="labelSubtitle">0 items</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalEtiquetas')"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div class="label-type-toggle">
+        <button class="active" id="btnTipoQR" onclick="setTipoEtiqueta('qr')"><i class="fas fa-qrcode"></i> QR</button>
+        <button id="btnTipoBarcode" onclick="setTipoEtiqueta('barcode')"><i class="fas fa-barcode"></i> Código de barras</button>
+      </div>
+      <div class="label-type-toggle">
+        <button class="active" id="btnTam1" onclick="setTamEtiqueta(1)">Pequeño</button>
+        <button id="btnTam2" onclick="setTamEtiqueta(2)">Mediano</button>
+        <button id="btnTam3" onclick="setTamEtiqueta(3)">Grande</button>
+      </div>
+      <button class="btn btn-primary" onclick="imprimirEtiquetas()"><i class="fas fa-print"></i> Imprimir</button>
+      <button class="btn btn-secondary" onclick="descargarEtiquetasSVG()"><i class="fas fa-download"></i> Descargar</button>
+    </div>
+    <div class="label-grid" id="labelGrid"></div>
+    <div id="printArea" style="display:none"></div>
+  </div>
 </div>
 
 <!-- SCANNER QR / BARCODE -->
@@ -1545,6 +1602,192 @@ document.addEventListener('click', () => {
 // MODO COMPACTO
 // ═══════════════════════════════════════════════════
 let modoCompacto = false;
+// ═══════════════════════════════════════════════════
+// ETIQUETAS QR / CÓDIGO DE BARRAS
+// ═══════════════════════════════════════════════════
+let tipoEtiqueta = 'qr';  // 'qr' | 'barcode'
+let tamEtiqueta  = 1;     // 1=pequeño 2=mediano 3=grande
+let itemsEtiqueta = [];
+
+// Generar miniatura QR en cada celda de la tabla
+function renderQRThumbs(items) {
+  items.forEach(i => {
+    const id  = (i.ID_ITEM || i.CODIGO || '').replace(/[^a-z0-9]/gi,'_');
+    const el  = document.getElementById('qrt-' + id);
+    if (!el || el.dataset.rendered) return;
+    el.dataset.rendered = '1';
+    const texto = i.CODIGO || i.ID_ITEM || '';
+    if (!texto) return;
+    try {
+      el.innerHTML = '';
+      new QRCode(el, {
+        text: texto,
+        width: 36, height: 36,
+        colorDark: '#1a1a2e', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) { el.innerHTML = '<i class="fas fa-qrcode" style="color:var(--border);font-size:20px"></i>'; }
+  });
+}
+
+function setTipoEtiqueta(tipo) {
+  tipoEtiqueta = tipo;
+  document.getElementById('btnTipoQR').classList.toggle('active', tipo === 'qr');
+  document.getElementById('btnTipoBarcode').classList.toggle('active', tipo === 'barcode');
+  renderLabelGrid(itemsEtiqueta);
+}
+
+function setTamEtiqueta(tam) {
+  tamEtiqueta = tam;
+  [1,2,3].forEach(n => document.getElementById('btnTam'+n)?.classList.toggle('active', n === tam));
+  renderLabelGrid(itemsEtiqueta);
+}
+
+function abrirEtiquetasItem(item) {
+  itemsEtiqueta = [item];
+  abrirModalEtiquetas();
+}
+
+function abrirEtiquetasTodos() {
+  itemsEtiqueta = datosInventarioFiltrados.length ? datosInventarioFiltrados : datosInventario;
+  abrirModalEtiquetas();
+}
+
+function bulkEtiquetas() {
+  itemsEtiqueta = getItemsSeleccionados();
+  if (!itemsEtiqueta.length) { toast('Selecciona al menos un item', 'warning'); return; }
+  limpiarSeleccion();
+  abrirModalEtiquetas();
+}
+
+function abrirModalEtiquetas() {
+  document.getElementById('labelSubtitle').textContent = itemsEtiqueta.length + ' item' + (itemsEtiqueta.length !== 1 ? 's' : '');
+  openModal('modalEtiquetas');
+  setTimeout(() => renderLabelGrid(itemsEtiqueta), 80);
+}
+
+function renderLabelGrid(items) {
+  const grid = document.getElementById('labelGrid');
+  const sizes = { 1: 80, 2: 120, 3: 160 };
+  const sz = sizes[tamEtiqueta];
+  grid.innerHTML = items.map((i, idx) => {
+    const texto = i.CODIGO || i.ID_ITEM || '';
+    const stock = parseFloat(i.CANTIDAD ?? i.STOCK_ACTUAL) || 0;
+    const min   = parseFloat(i.STOCK_MINIMO) || 0;
+    const cls   = stock <= 0 ? 'badge-danger' : stock <= min ? 'badge-warning' : 'badge-success';
+    return `<div class="label-card">
+      <div id="lc-${idx}" style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center"></div>
+      <div class="lc-code">${texto}</div>
+      <div class="lc-desc">${(i.DESCRIPCION||'').slice(0,40)}</div>
+      <span class="lc-stock ${cls}">${stock} ${i.UNIDAD_MEDIDA||i.UNIDAD||''}</span>
+    </div>`;
+  }).join('');
+
+  // Renderizar QR o Barcode en cada slot
+  items.forEach((i, idx) => {
+    const el = document.getElementById('lc-' + idx);
+    if (!el) return;
+    const texto = i.CODIGO || i.ID_ITEM || '';
+    el.innerHTML = '';
+    if (tipoEtiqueta === 'qr') {
+      try {
+        new QRCode(el, {
+          text: texto || 'SIN-CODIGO',
+          width: sz, height: sz,
+          colorDark: '#1a1a2e', colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch(e) {}
+    } else {
+      // Barcode CODE128
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      el.appendChild(svg);
+      try {
+        JsBarcode(svg, texto || '0000', {
+          format: 'CODE128',
+          width: Math.max(1, sz/60),
+          height: sz * 0.65,
+          displayValue: false,
+          margin: 4,
+          lineColor: '#1a1a2e',
+          background: '#ffffff'
+        });
+        svg.style.width  = sz + 'px';
+        svg.style.height = sz + 'px';
+      } catch(e) { el.innerHTML = '<small style="color:var(--danger);font-size:9px">Código inválido</small>'; }
+    }
+  });
+}
+
+function imprimirEtiquetas() {
+  const sizes = { 1: 100, 2: 150, 3: 200 };
+  const sz = sizes[tamEtiqueta];
+  const printArea = document.getElementById('printArea');
+
+  // Generar HTML de impresión con imágenes base64 de los QRs
+  let html = '<div style="display:flex;flex-wrap:wrap;gap:10px;padding:10px">';
+  const cards = document.querySelectorAll('#labelGrid .label-card');
+  cards.forEach((card, idx) => {
+    const item = itemsEtiqueta[idx];
+    const lcEl = card.querySelector('[id^="lc-"]');
+    let imgHtml = '';
+    const canvas = lcEl?.querySelector('canvas');
+    const svg    = lcEl?.querySelector('svg');
+    if (canvas) {
+      imgHtml = `<img src="${canvas.toDataURL()}" width="${sz}" height="${sz}">`;
+    } else if (svg) {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const b64 = btoa(unescape(encodeURIComponent(svgData)));
+      imgHtml = `<img src="data:image/svg+xml;base64,${b64}" width="${sz}" height="${sz}>`;
+    }
+    html += `<div class="print-label" style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1px solid #ccc;border-radius:8px;margin:4px;width:${sz+20}px">
+      ${imgHtml}
+      <b style="font-size:10px;font-family:monospace;word-break:break-all;text-align:center">${item.CODIGO||''}</b>
+      <small style="font-size:9px;color:#555;text-align:center;line-height:1.2">${(item.DESCRIPCION||'').slice(0,35)}</small>
+    </div>`;
+  });
+  html += '</div>';
+  printArea.innerHTML = html;
+  printArea.style.display = 'block';
+  window.print();
+  printArea.style.display = 'none';
+  printArea.innerHTML = '';
+}
+
+function descargarEtiquetasSVG() {
+  // Descargar como SVG agrupado
+  const sz = { 1:100, 2:150, 3:200 }[tamEtiqueta];
+  const cols = 4;
+  const pad  = 20;
+  const cw   = sz + pad * 2 + 20;
+  const ch   = sz + 60;
+  const rows = Math.ceil(itemsEtiqueta.length / cols);
+  let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${cols*cw}" height="${rows*ch}">
+    <rect width="100%" height="100%" fill="white"/>`;
+
+  document.querySelectorAll('#labelGrid .label-card').forEach((card, idx) => {
+    const item = itemsEtiqueta[idx];
+    const x = (idx % cols) * cw + pad;
+    const y = Math.floor(idx / cols) * ch + pad;
+    const canvas = card.querySelector('canvas');
+    let qrImg = '';
+    if (canvas) {
+      qrImg = `<image href="${canvas.toDataURL()}" x="${x}" y="${y}" width="${sz}" height="${sz}"/>`;
+    }
+    svgContent += `<g>
+      <rect x="${x-8}" y="${y-8}" width="${sz+16}" height="${ch-8}" rx="8" fill="white" stroke="#e1e6ef" stroke-width="1.5"/>
+      ${qrImg}
+      <text x="${x + sz/2}" y="${y + sz + 16}" font-family="monospace" font-size="11" font-weight="bold" fill="#1a1a2e" text-anchor="middle">${item.CODIGO||''}</text>
+      <text x="${x + sz/2}" y="${y + sz + 30}" font-family="sans-serif" font-size="9" fill="#5f6368" text-anchor="middle">${(item.DESCRIPCION||'').slice(0,28)}</text>
+    </g>`;
+  });
+  svgContent += '</svg>';
+  const blob = new Blob([svgContent], { type:'image/svg+xml' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'etiquetas_nexora.svg' });
+  a.click();
+  toast('SVG descargado', 'success');
+}
+
 function toggleModoCompacto() {
   modoCompacto = !modoCompacto;
   document.querySelector('.table-responsive table')?.classList.toggle('compact', modoCompacto);
@@ -1900,7 +2143,8 @@ function renderInventarioCards(items) {
       <div class="as-card-actions">
         <button onclick='editarItem(${JSON.stringify(i)})'><i class="fas fa-pen"></i> Editar</button>
         <button onclick='abrirMovimientoRapido(${JSON.stringify(i)})' style="color:var(--navy)"><i class="fas fa-right-left"></i> Mover</button>
-        <button class="danger" onclick="eliminarItem('${i.ID_ITEM}')"><i class="fas fa-trash"></i> Eliminar</button>
+        <button onclick='abrirEtiquetasItem(${JSON.stringify(i)})' style="color:var(--navy)"><i class="fas fa-qrcode"></i> QR</button>
+        <button class="danger" onclick="eliminarItem('${i.ID_ITEM}')"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');
@@ -2165,7 +2409,7 @@ async function loadInventarioData() {
     datosInventario = r.datos || [];
     datosInventarioFiltrados = datosInventario;
     if (vistaInventarioActual === 'tarjetas') renderInventarioCards(datosInventario);
-    else { renderInventario(datosInventario); postRenderSort('invTablaContainer'); }
+    else { renderInventario(datosInventario); postRenderSort('invTablaContainer'); setTimeout(()=>renderQRThumbs(datosInventario),100); }
     // Actualizar badge del tab PRO
     document.getElementById('badge-inv-pro').textContent = datosInventario.length;
     // Poblar filtro de categorías
@@ -2192,6 +2436,7 @@ function renderInventario(items) {
     const id = i.ID_ITEM || i.CODIGO;
     return `<tr data-id="${id}">
       <td style="width:36px"><input type="checkbox" class="cb-row cb-item" value="${id}" onchange="onCheckboxChange()"></td>
+      <td style="width:50px"><div class="qr-thumb" id="qrt-${id.replace(/[^a-z0-9]/gi,'_')}" onclick='abrirEtiquetasItem(${JSON.stringify(i)})' title="Ver etiqueta · ${i.CODIGO}"></div></td>
       <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">
         <div style="display:flex;align-items:center;gap:6px">
           <button class="btn-fav ${esFav?'active':''}" onclick="toggleFavorito('${id}','${(i.CODIGO||'').replace(/'/g,"\'")}','${(i.DESCRIPCION||'').replace(/'/g,"\'")}',this)" title="${esFav?'Quitar favorito':'Agregar a favoritos'}"><i class="fas fa-star"></i></button>
