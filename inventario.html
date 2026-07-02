@@ -131,6 +131,70 @@ ul{list-style:none}
 .alerta-row:hover td{background:var(--warning-bg)!important}
 .alerta-row td{transition:background .15s}
 
+
+/* ── MODO COMPACTO ── */
+.compact tbody td{padding:6px 12px;font-size:12.5px}
+.compact thead th{padding:7px 12px;font-size:10.5px}
+.compact .stock-progress{display:none}
+.btn-compact{width:32px;height:32px;border-radius:8px;background:var(--bg2);color:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all var(--trans)}
+.btn-compact.active{background:var(--navy);color:#fff}
+
+/* ── CHECKBOXES MASIVOS ── */
+.cb-row{width:14px;height:14px;accent-color:var(--navy);cursor:pointer}
+.bulk-bar{position:sticky;bottom:0;left:0;right:0;background:var(--navy);color:#fff;padding:10px 20px;display:none;align-items:center;gap:14px;border-radius:0 0 var(--radius) var(--radius);z-index:60;animation:slideUp .2s ease}
+.bulk-bar.visible{display:flex}
+.bulk-bar span{font-size:13px;font-weight:600;flex:1}
+.bulk-btn{padding:7px 14px;border-radius:16px;font-size:12px;font-weight:600;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;gap:6px;transition:background .15s}
+.bulk-btn:hover{background:rgba(255,255,255,.28)}
+.bulk-btn.danger:hover{background:var(--danger)}
+
+/* ── FAVORITOS ── */
+.btn-fav{background:transparent;color:var(--border);font-size:14px;padding:4px;transition:color .15s}
+.btn-fav.active{color:#f59e0b}
+.fav-section{margin-bottom:18px}
+.fav-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.fav-chip{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;transition:all var(--trans)}
+.fav-chip:hover{background:var(--info-bg);border-color:var(--navy)}
+.fav-chip i{color:#f59e0b}
+
+/* ── HISTORIAL PANEL (drawer lateral) ── */
+.hist-drawer{position:fixed;top:0;right:-400px;width:380px;bottom:0;background:var(--surface);box-shadow:-4px 0 24px rgba(60,64,67,.18);z-index:600;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1)}
+.hist-drawer.open{right:0}
+.hist-drawer-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg)}
+.hist-drawer-head h3{font-size:14px;font-weight:700;color:var(--navy)}
+.hist-drawer-body{flex:1;overflow-y:auto;padding:0}
+.hist-item{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);transition:background .15s}
+.hist-item:hover{background:var(--bg2)}
+.hist-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.hist-icon.entrada{background:var(--success-bg);color:var(--success)}
+.hist-icon.salida{background:var(--danger-bg);color:var(--danger)}
+.hist-icon.ajuste{background:var(--warning-bg);color:var(--warning)}
+.hist-info{flex:1;min-width:0}
+.hist-info b{font-size:13px;color:var(--navy);display:block}
+.hist-info span{font-size:11.5px;color:var(--text-muted)}
+.hist-qty{font-size:14px;font-weight:700;text-align:right}
+.hist-qty.entrada{color:var(--success)}
+.hist-qty.salida{color:var(--danger)}
+.hist-qty.ajuste{color:var(--warning)}
+.hist-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:599;display:none}
+.hist-drawer-overlay.open{display:block}
+
+/* ── SOLICITUD 1-CLIC ── */
+.btn-sol-rapida{background:var(--warning-bg);color:var(--warning);border:1.5px solid #fcd34d;font-size:11px;font-weight:700;padding:4px 10px;border-radius:16px;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .15s}
+.btn-sol-rapida:hover{background:#fef3c7;border-color:var(--warning)}
+
+/* ── ATAJOS BADGE ── */
+.kbd{display:inline-flex;align-items:center;padding:1px 5px;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);background:var(--bg2);margin-left:4px}
+
+
+/* ── COLUMNAS ORDENABLES ── */
+thead th.sortable{cursor:pointer;user-select:none;position:relative;padding-right:28px}
+thead th.sortable:hover{color:var(--navy);background:var(--info-bg)}
+thead th.sortable::after{content:'↕';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;opacity:.35}
+thead th.sortable.asc::after{content:'↑';opacity:1;color:var(--navy)}
+thead th.sortable.desc::after{content:'↓';opacity:1;color:var(--navy)}
+thead th.sortable.asc,thead th.sortable.desc{color:var(--navy);background:var(--info-bg)}
+
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:90;box-shadow:0 1px 3px rgba(60,64,67,.1)}
 .topbar-left{display:flex;align-items:center;gap:12px}
@@ -725,10 +789,11 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
             <button type="button" id="vtoggle-tabla" class="active" onclick="cambiarVistaInventario('tabla')" title="Vista tabla"><i class="fas fa-list"></i></button>
             <button type="button" id="vtoggle-tarjetas" onclick="cambiarVistaInventario('tarjetas')" title="Vista tarjetas"><i class="fas fa-grip"></i></button>
           </div>
+          <button class="btn-compact" id="btnCompacto" onclick="toggleModoCompacto()" title="Modo compacto"><i class="fas fa-bars-staggered"></i></button>
         </div>
         <div class="table-container" id="invTablaContainer">
           <div class="table-responsive"><table>
-            <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th style="width:36px"><input type="checkbox" class="cb-row" id="cbTodos" onchange="toggleTodosCheckbox(this)" title="Seleccionar todos"></th><th>Código</th><th>Descripción</th><th>Categoría</th><th>Bodega</th><th>Unidad</th><th>Stock</th><th>Mín.</th><th>Precio Unit.</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tb-inventario"><tr><td colspan="10" class="table-empty"><span class="spinner dark"></span></td></tr></tbody>
           </table></div>
         </div>
@@ -1250,6 +1315,32 @@ tbody td{padding:12px 16px;color:var(--text-mid);vertical-align:middle}
   </div>
 </div>
 
+
+<!-- HISTORIAL DRAWER -->
+<div class="hist-drawer-overlay" id="histOverlay" onclick="cerrarHistDrawer()"></div>
+<div class="hist-drawer" id="histDrawer">
+  <div class="hist-drawer-head">
+    <div>
+      <h3 id="histDrawerTitle">Historial de movimientos</h3>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px" id="histDrawerSub"></div>
+    </div>
+    <button onclick="cerrarHistDrawer()" style="width:30px;height:30px;border-radius:50%;background:var(--border);color:var(--text-muted);display:flex;align-items:center;justify-content:center"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="hist-drawer-body" id="histDrawerBody">
+    <div class="table-empty"><span class="spinner dark"></span></div>
+  </div>
+</div>
+
+<!-- BARRA DE ACCIONES MASIVAS -->
+<div class="bulk-bar" id="bulkBar">
+  <span id="bulkCount">0 items seleccionados</span>
+  <button class="bulk-btn" onclick="bulkMovimiento()"><i class="fas fa-right-left"></i> Mover</button>
+  <button class="bulk-btn" onclick="bulkExportar()"><i class="fas fa-file-excel"></i> Exportar</button>
+  <button class="bulk-btn" onclick="bulkSolicitud()"><i class="fas fa-cart-plus"></i> Solicitar</button>
+  <button class="bulk-btn danger" onclick="bulkEliminar()"><i class="fas fa-trash"></i> Eliminar</button>
+  <button onclick="limpiarSeleccion()" style="margin-left:auto;color:rgba(255,255,255,.6);font-size:13px"><i class="fas fa-times"></i></button>
+</div>
+
 <!-- SCANNER QR / BARCODE -->
 <div class="scanner-overlay" id="scannerOverlay">
   <div class="scanner-box">
@@ -1380,36 +1471,48 @@ function generarVistaTarjetas(tablaContainerId, cardsContainerId) {
 function irAItemInventario(idOrCodigo) {
   navTo('inventario');
   setTimeout(async () => {
-    // Si los datos aún no cargaron, esperar
+    // Esperar datos si aún no cargaron
     if (!datosInventario.length) await loadInventarioData();
-    // Buscar por código o ID
-    const q = String(idOrCodigo).toUpperCase();
-    document.getElementById('searchInv').value = q;
+
+    const q = String(idOrCodigo).trim().toUpperCase();
+
+    // Buscar el item en los datos (por ID_ITEM o por CODIGO)
+    const item = datosInventario.find(i =>
+      String(i.ID_ITEM || '').toUpperCase() === q ||
+      String(i.CODIGO  || '').toUpperCase() === q
+    );
+
+    // Usar el CODIGO real del item para la búsqueda visible
+    const terminoBusqueda = item ? String(item.CODIGO || item.DESCRIPCION || q) : q;
+
+    document.getElementById('searchInv').value = terminoBusqueda;
     filtrarInventario();
-    // Resaltar la fila encontrada en tabla
+
     setTimeout(() => {
+      // Resaltar fila en tabla
       const tbody = document.getElementById('tb-inventario');
-      if (!tbody) return;
-      const fila = [...tbody.querySelectorAll('tr')].find(tr =>
-        tr.textContent.toUpperCase().includes(q)
-      );
-      if (fila) {
-        fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        fila.style.transition = 'background .2s';
-        fila.style.background = 'var(--warning-bg)';
-        setTimeout(() => fila.style.background = '', 2200);
+      if (tbody) {
+        const fila = [...tbody.querySelectorAll('tr')].find(tr =>
+          tr.textContent.toUpperCase().includes(terminoBusqueda.toUpperCase())
+        );
+        if (fila) {
+          fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          fila.style.transition = 'background .3s';
+          fila.style.background = 'var(--warning-bg)';
+          setTimeout(() => fila.style.background = '', 2500);
+        }
       }
-      // Si está en vista tarjetas, resaltar la card
+      // Resaltar card en vista tarjetas
       const card = [...document.querySelectorAll('.as-card')].find(cd =>
-        cd.textContent.toUpperCase().includes(q)
+        cd.textContent.toUpperCase().includes(terminoBusqueda.toUpperCase())
       );
       if (card) {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
         card.style.outline = '2.5px solid var(--danger)';
         card.style.boxShadow = '0 0 0 6px rgba(197,34,31,.12)';
-        setTimeout(() => { card.style.outline = ''; card.style.boxShadow = ''; }, 2200);
+        setTimeout(() => { card.style.outline = ''; card.style.boxShadow = ''; }, 2500);
       }
-    }, 350);
+    }, 400);
   }, 320);
 }
 
@@ -1436,6 +1539,336 @@ document.addEventListener('click', () => {
   const p = document.getElementById('alertPanel');
   if (p) p.style.display = 'none';
 });
+
+
+// ═══════════════════════════════════════════════════
+// MODO COMPACTO
+// ═══════════════════════════════════════════════════
+let modoCompacto = false;
+function toggleModoCompacto() {
+  modoCompacto = !modoCompacto;
+  document.querySelector('.table-responsive table')?.classList.toggle('compact', modoCompacto);
+  document.getElementById('btnCompacto')?.classList.toggle('active', modoCompacto);
+  toast(modoCompacto ? 'Modo compacto activado' : 'Modo normal', 'info');
+}
+
+// ═══════════════════════════════════════════════════
+// FAVORITOS
+// ═══════════════════════════════════════════════════
+function getFavoritos() {
+  try { return JSON.parse(localStorage.getItem('nexora_favs') || '[]'); } catch { return []; }
+}
+function saveFavoritos(favs) {
+  localStorage.setItem('nexora_favs', JSON.stringify(favs));
+}
+function toggleFavorito(id, codigo, descripcion, btnEl) {
+  let favs = getFavoritos();
+  const idx = favs.findIndex(f => f.id === id);
+  if (idx >= 0) {
+    favs.splice(idx, 1);
+    btnEl.classList.remove('active');
+    toast(`Quitado de favoritos: ${codigo}`, 'info');
+  } else {
+    favs.push({ id, codigo, descripcion });
+    btnEl.classList.add('active');
+    toast(`★ ${codigo} agregado a favoritos`, 'success');
+  }
+  saveFavoritos(favs);
+  renderFavChips();
+}
+function renderFavChips() {
+  const favs = getFavoritos();
+  const sec = document.getElementById('favSection');
+  const cont = document.getElementById('favChips');
+  if (!sec || !cont) return;
+  if (!favs.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  cont.innerHTML = favs.map(f => `
+    <div class="fav-chip" onclick="irAItemInventario('${f.id}')">
+      <i class="fas fa-star"></i>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted)">${f.codigo}</span>
+      <span>${f.descripcion.length > 22 ? f.descripcion.slice(0,22)+'…' : f.descripcion}</span>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// HISTORIAL DRAWER
+// ═══════════════════════════════════════════════════
+function abrirHistorial(id, codigo, descripcion, bodega) {
+  document.getElementById('histDrawerTitle').textContent = codigo + ' — ' + descripcion;
+  document.getElementById('histDrawerSub').textContent = 'Bodega: ' + (bodega || '—');
+  document.getElementById('histDrawerBody').innerHTML = '<div class="table-empty"><span class="spinner dark"></span></div>';
+  document.getElementById('histDrawer').classList.add('open');
+  document.getElementById('histOverlay').classList.add('open');
+  // Cargar movimientos del item
+  cargarHistorialItem(id, codigo);
+}
+function cerrarHistDrawer() {
+  document.getElementById('histDrawer').classList.remove('open');
+  document.getElementById('histOverlay').classList.remove('open');
+}
+async function cargarHistorialItem(id, codigo) {
+  try {
+    const r = await apiCall('MOVIMIENTOS', 'listar', {});
+    const body = document.getElementById('histDrawerBody');
+    if (!r?.datos?.length) {
+      body.innerHTML = '<div class="table-empty"><i class="fas fa-inbox"></i><br>Sin movimientos registrados</div>';
+      return;
+    }
+    // Filtrar por este item
+    const movs = r.datos.filter(m =>
+      String(m.ID_ITEM||'').toUpperCase() === String(id).toUpperCase() ||
+      String(m.CODIGO_ITEM||'').toUpperCase() === String(codigo).toUpperCase()
+    ).sort((a,b) => new Date(b.FECHA||0) - new Date(a.FECHA||0));
+    if (!movs.length) {
+      body.innerHTML = '<div class="table-empty"><i class="fas fa-inbox"></i><br>Sin movimientos para este item</div>';
+      return;
+    }
+    body.innerHTML = movs.map(m => {
+      const tipo = (m.TIPO||'').toLowerCase();
+      const iconMap = { entrada:'arrow-down', salida:'arrow-up', ajuste:'sliders' };
+      const icon = iconMap[tipo] || 'circle';
+      const qty = parseFloat(m.CANTIDAD) || 0;
+      const signo = tipo === 'entrada' ? '+' : tipo === 'salida' ? '-' : '±';
+      return `<div class="hist-item">
+        <div class="hist-icon ${tipo}"><i class="fas fa-${icon}"></i></div>
+        <div class="hist-info">
+          <b>${m.TIPO||'—'}</b>
+          <span>${fmtFecha(m.FECHA)} · ${m.RESPONSABLE||'—'}</span>
+          ${m.OT||m.REFERENCIA ? `<span style="color:var(--navy);font-weight:600">OT: ${m.OT||m.REFERENCIA}</span>` : ''}
+        </div>
+        <div class="hist-qty ${tipo}">${signo}${qty} ${m.UNIDAD||''}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('histDrawerBody').innerHTML = '<div class="table-empty"><i class="fas fa-triangle-exclamation"></i><br>Error cargando historial</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SOLICITUD COMPRA RÁPIDA (1 CLIC)
+// ═══════════════════════════════════════════════════
+async function solicitarCompraRapida(item) {
+  const stock  = parseFloat(item.CANTIDAD ?? item.STOCK_ACTUAL) || 0;
+  const min    = parseFloat(item.STOCK_MINIMO) || 0;
+  const sugerido = Math.max(min - stock, 1);
+  // Abrir modal solicitud y prellenarlo
+  navTo('solicitudes');
+  await new Promise(r => setTimeout(r, 350));
+  openModalSolicitud?.();
+  await new Promise(r => setTimeout(r, 200));
+  const selItem = document.getElementById('solItem');
+  if (selItem) {
+    const opt = [...selItem.options].find(o => o.value === item.ID_ITEM || o.value === item.CODIGO);
+    if (opt) selItem.value = opt.value;
+    else { selItem.add(new Option(`${item.CODIGO} — ${item.DESCRIPCION}`, item.ID_ITEM||item.CODIGO, true, true)); }
+  }
+  const qty = document.getElementById('solCantidad');
+  if (qty) qty.value = sugerido;
+  const obs = document.getElementById('solObservaciones') || document.getElementById('solNota');
+  if (obs) obs.value = `Stock bajo: actual ${stock} / mínimo ${min}. Solicitud automática desde Inventario.`;
+  toast(`Solicitud prellenada — ${item.CODIGO} (cant. sugerida: ${sugerido})`, 'success');
+}
+
+// ═══════════════════════════════════════════════════
+// ACCIONES MASIVAS
+// ═══════════════════════════════════════════════════
+let itemsSeleccionados = new Set();
+
+function onCheckboxChange() {
+  itemsSeleccionados.clear();
+  document.querySelectorAll('.cb-item:checked').forEach(cb => itemsSeleccionados.add(cb.value));
+  const bar = document.getElementById('bulkBar');
+  const n = itemsSeleccionados.size;
+  document.getElementById('bulkCount').textContent = n + ' item' + (n !== 1 ? 's' : '') + ' seleccionado' + (n !== 1 ? 's' : '');
+  bar.classList.toggle('visible', n > 0);
+  // Sincronizar cb-todos
+  const cbs = document.querySelectorAll('.cb-item');
+  const cbTodos = document.getElementById('cbTodos');
+  if (cbTodos) cbTodos.indeterminate = n > 0 && n < cbs.length;
+}
+
+function toggleTodosCheckbox(master) {
+  document.querySelectorAll('.cb-item').forEach(cb => { cb.checked = master.checked; });
+  onCheckboxChange();
+}
+
+function limpiarSeleccion() {
+  document.querySelectorAll('.cb-item').forEach(cb => cb.checked = false);
+  const cbTodos = document.getElementById('cbTodos');
+  if (cbTodos) { cbTodos.checked = false; cbTodos.indeterminate = false; }
+  itemsSeleccionados.clear();
+  document.getElementById('bulkBar').classList.remove('visible');
+}
+
+function getItemsSeleccionados() {
+  return [...itemsSeleccionados].map(id =>
+    datosInventario.find(i => (i.ID_ITEM||i.CODIGO) === id)
+  ).filter(Boolean);
+}
+
+async function bulkMovimiento() {
+  const items = getItemsSeleccionados();
+  if (!items.length) return;
+  // Abrir modal movimiento con nota de masivo
+  await abrirMovimientoRapido(items[0]);
+  if (items.length > 1) toast(`Se aplicará el movimiento a ${items.length} items`, 'warning');
+  limpiarSeleccion();
+}
+
+function bulkExportar() {
+  const items = getItemsSeleccionados();
+  if (!items.length) return;
+  const ws = XLSX.utils.json_to_sheet(items);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Items');
+  XLSX.writeFile(wb, `inventario_seleccion_${Date.now()}.xlsx`);
+  toast(`${items.length} items exportados`, 'success');
+  limpiarSeleccion();
+}
+
+async function bulkSolicitud() {
+  const items = getItemsSeleccionados();
+  if (!items.length) return;
+  for (const item of items) {
+    const stock = parseFloat(item.CANTIDAD ?? item.STOCK_ACTUAL) || 0;
+    const min   = parseFloat(item.STOCK_MINIMO) || 0;
+    if (stock <= min) await solicitarCompraRapida(item);
+  }
+  toast(`Solicitudes generadas para items con stock bajo`, 'success');
+  limpiarSeleccion();
+}
+
+async function bulkEliminar() {
+  const items = getItemsSeleccionados();
+  if (!items.length) return;
+  if (!confirm(`¿Eliminar ${items.length} items seleccionados? Esta acción no se puede deshacer.`)) return;
+  for (const item of items) await eliminarItem(item.ID_ITEM, true);
+  toast(`${items.length} items eliminados`, 'success');
+  limpiarSeleccion();
+  loadInventarioData();
+}
+
+// ═══════════════════════════════════════════════════
+// ATAJOS DE TECLADO
+// ═══════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  // Ignorar si hay un input/textarea activo
+  const tag = document.activeElement?.tagName;
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  // Escape — cerrar modales y drawers
+  if (e.key === 'Escape') {
+    cerrarHistDrawer();
+    cerrarScanner().catch(()=>{});
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      if (m.style.display !== 'none') closeModal(m.id);
+    });
+    limpiarSeleccion();
+    return;
+  }
+
+  if (inInput) return;
+
+  // Ctrl / Cmd + N — nuevo item (si está en inventario)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    const vistaActiva = document.querySelector('.view.active')?.id;
+    if (vistaActiva === 'view-inventario') openModalItem();
+    else if (vistaActiva === 'view-movimientos') openModalMovimiento();
+    else if (vistaActiva === 'view-solicitudes') openModalSolicitud?.();
+    return;
+  }
+
+  // / o F — foco en búsqueda
+  if (e.key === '/' || e.key === 'f') {
+    e.preventDefault();
+    const search = document.getElementById('searchInv') || document.getElementById('searchMov');
+    if (search) { search.focus(); search.select(); }
+    return;
+  }
+
+  // R — refresh
+  if (e.key === 'r' && !e.ctrlKey) {
+    e.preventDefault();
+    refreshVistaActual?.();
+    return;
+  }
+
+  // C — modo compacto
+  if (e.key === 'c') {
+    e.preventDefault();
+    toggleModoCompacto();
+    return;
+  }
+});
+
+// Cargar favoritos en dashboard cuando se muestre
+const _origNavTo = navTo;
+function navTo(vista) {
+  _origNavTo(vista);
+  if (vista === 'dashboard') setTimeout(renderFavChips, 100);
+}
+
+
+// ═══════════════════════════════════════════════════
+// ORDENAMIENTO DE COLUMNAS (universal)
+// ═══════════════════════════════════════════════════
+const _sortState = {};   // { tablaId: { col, dir } }
+
+function initSortableHeaders(tableId) {
+  const table = document.getElementById(tableId)?.closest('table') ||
+                document.querySelector('#' + tableId + ' table');
+  if (!table) return;
+  const ths = table.querySelectorAll('thead th');
+  ths.forEach((th, idx) => {
+    // Skip columnas sin datos reales (checkbox, acciones)
+    const txt = th.textContent.trim();
+    if (!txt || /^(acciones?)$/i.test(txt) || th.querySelector('input')) return;
+    th.classList.add('sortable');
+    th.dataset.colIdx = idx;
+    th.onclick = () => sortTable(table, idx, tableId);
+  });
+}
+
+function sortTable(table, colIdx, tableId) {
+  const key = tableId || table.id;
+  const prev = _sortState[key] || { col: -1, dir: 'asc' };
+  const dir  = prev.col === colIdx && prev.dir === 'asc' ? 'desc' : 'asc';
+  _sortState[key] = { col: colIdx, dir };
+
+  // Resetear indicadores
+  table.querySelectorAll('thead th.sortable').forEach(th => th.classList.remove('asc','desc'));
+  table.querySelectorAll('thead th.sortable')[
+    [...table.querySelectorAll('thead th.sortable')].findIndex(t => +t.dataset.colIdx === colIdx)
+  ]?.classList.add(dir);
+
+  const tbody = table.querySelector('tbody');
+  const rows  = [...tbody.querySelectorAll('tr')].filter(r => !r.querySelector('.table-empty'));
+  if (!rows.length) return;
+
+  rows.sort((a, b) => {
+    const cellA = a.cells[colIdx]?.textContent.trim() || '';
+    const cellB = b.cells[colIdx]?.textContent.trim() || '';
+    // Detectar número
+    const numA = parseFloat(cellA.replace(/[$,.]/g, ''));
+    const numB = parseFloat(cellB.replace(/[$,.]/g, ''));
+    let cmp;
+    if (!isNaN(numA) && !isNaN(numB)) {
+      cmp = numA - numB;
+    } else {
+      cmp = cellA.localeCompare(cellB, 'es', { sensitivity: 'base' });
+    }
+    return dir === 'asc' ? cmp : -cmp;
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// Inicializar después de cada render
+function postRenderSort(tableContainerId) {
+  setTimeout(() => initSortableHeaders(tableContainerId), 50);
+}
 
 function refrescarVistaSiActiva(modulo) {
   const cfg = VISTA_MODULOS[modulo];
@@ -1466,6 +1899,7 @@ function renderInventarioCards(items) {
       </div>
       <div class="as-card-actions">
         <button onclick='editarItem(${JSON.stringify(i)})'><i class="fas fa-pen"></i> Editar</button>
+        <button onclick='abrirMovimientoRapido(${JSON.stringify(i)})' style="color:var(--navy)"><i class="fas fa-right-left"></i> Mover</button>
         <button class="danger" onclick="eliminarItem('${i.ID_ITEM}')"><i class="fas fa-trash"></i> Eliminar</button>
       </div>
     </div>`;
@@ -1731,7 +2165,7 @@ async function loadInventarioData() {
     datosInventario = r.datos || [];
     datosInventarioFiltrados = datosInventario;
     if (vistaInventarioActual === 'tarjetas') renderInventarioCards(datosInventario);
-    else renderInventario(datosInventario);
+    else { renderInventario(datosInventario); postRenderSort('invTablaContainer'); }
     // Actualizar badge del tab PRO
     document.getElementById('badge-inv-pro').textContent = datosInventario.length;
     // Poblar filtro de categorías
@@ -1746,14 +2180,24 @@ async function loadInventarioData() {
 function renderInventario(items) {
   const tb = document.getElementById('tb-inventario');
   if (!items.length) { tb.innerHTML = '<tr><td colspan="10" class="table-empty"><i class="fas fa-box-open"></i><br>No hay items registrados</td></tr>'; return; }
+  const favs = getFavoritos();
   tb.innerHTML = items.map(i => {
     const stock = parseFloat(i.CANTIDAD ?? i.STOCK_ACTUAL) || 0;
     const min = parseFloat(i.STOCK_MINIMO) || 0;
     const pct = min > 0 ? Math.min((stock / min) * 100, 100) : 100;
     const cls = stock <= 0 ? 'critical' : stock <= min ? 'low' : 'ok';
     const badgeCls = cls === 'ok' ? 'badge-success' : cls === 'low' ? 'badge-warning' : 'badge-danger';
-    return `<tr>
-      <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">${i.CODIGO||''}</td>
+    const esFav = favs.includes(i.ID_ITEM || i.CODIGO);
+    const bajoStock = stock <= min && min > 0;
+    const id = i.ID_ITEM || i.CODIGO;
+    return `<tr data-id="${id}">
+      <td style="width:36px"><input type="checkbox" class="cb-row cb-item" value="${id}" onchange="onCheckboxChange()"></td>
+      <td class="td-bold" style="font-family:'DM Mono',monospace;font-size:12px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn-fav ${esFav?'active':''}" onclick="toggleFavorito('${id}','${(i.CODIGO||'').replace(/'/g,"\'")}','${(i.DESCRIPCION||'').replace(/'/g,"\'")}',this)" title="${esFav?'Quitar favorito':'Agregar a favoritos'}"><i class="fas fa-star"></i></button>
+          ${i.CODIGO||''}
+        </div>
+      </td>
       <td>${i.DESCRIPCION||''}</td>
       <td><span class="badge badge-neutral">${i.CATEGORIA||'—'}</span></td>
       <td>${i.BODEGA||'—'}</td>
@@ -1766,10 +2210,15 @@ function renderInventario(items) {
       </td>
       <td>${min}</td>
       <td>$${formatNum(i.PRECIO_UNITARIO)}</td>
-      <td><span class="badge badge-success">Activo</span></td>
+      <td>${bajoStock ? '<span class="badge badge-warning">Stock bajo</span>' : '<span class="badge badge-success">OK</span>'}</td>
       <td>
-        <button class="btn btn-icon btn-secondary" title="Editar" onclick='editarItem(${JSON.stringify(i)})'><i class="fas fa-pen"></i></button>
-        <button class="btn btn-icon btn-danger" title="Eliminar" onclick="eliminarItem('${i.ID_ITEM}')"><i class="fas fa-trash"></i></button>
+        <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-icon btn-secondary" title="Editar" onclick='editarItem(${JSON.stringify(i)})'><i class="fas fa-pen"></i></button>
+          <button class="btn btn-icon" title="Ver historial" onclick="abrirHistorial('${id}','${(i.CODIGO||'').replace(/'/g,"\'")}','${(i.DESCRIPCION||'').replace(/'/g,"\'")}','${i.BODEGA||''}')" style="background:var(--info-bg);color:var(--navy);border:1.5px solid var(--border)"><i class="fas fa-clock-rotate-left"></i></button>
+          <button class="btn btn-icon" title="Registrar movimiento" onclick='abrirMovimientoRapido(${JSON.stringify(i)})' style="background:var(--info-bg);color:var(--navy);border:1.5px solid var(--border)"><i class="fas fa-right-left"></i></button>
+          ${bajoStock ? `<button class="btn-sol-rapida" onclick='solicitarCompraRapida(${JSON.stringify(i)})' title="Solicitar compra"><i class="fas fa-cart-plus"></i> Pedir</button>` : ''}
+          <button class="btn btn-icon btn-danger" title="Eliminar" onclick="eliminarItem('${i.ID_ITEM}')" style="display:${window.sesion?.rol==='Administrador'?'flex':'none'}"><i class="fas fa-trash"></i></button>
+        </div>
       </td>
     </tr>`;
   }).join('');
@@ -2020,7 +2469,7 @@ function renderMovimientos(movs) {
       <td>${m.REFERENCIA||m.OT||'—'}</td>
     </tr>`;
   }).join('');
-  refrescarVistaSiActiva('movimientos');
+  refrescarVistaSiActiva('movimientos'); postRenderSort('tc-movimientos');
 }
 
 function filtrarMovimientos() {
@@ -2030,6 +2479,45 @@ function filtrarMovimientos() {
     (q === '' || (m._NOMBRE_ITEM||m.ID_ITEM||'').toLowerCase().includes(q) || (m.RESPONSABLE||'').toLowerCase().includes(q)) &&
     (tipo === '' || m.TIPO === tipo)
   ));
+}
+
+async function abrirMovimientoRapido(item) {
+  // Poblar select de items si no está listo
+  await openModalMovimiento();
+  // Poner el item en el select
+  const sel = document.getElementById('movItem');
+  // Buscar la opción que coincide con el ID_ITEM
+  const opt = [...sel.options].find(o => o.value === item.ID_ITEM || o.value === item.CODIGO);
+  if (opt) {
+    sel.value = opt.value;
+  } else {
+    // Si no existe como option, agregar temporalmente
+    const newOpt = new Option(`${item.CODIGO} — ${item.DESCRIPCION}`, item.ID_ITEM, true, true);
+    sel.add(newOpt);
+    sel.value = item.ID_ITEM;
+  }
+  // Disparar el evento change por si hay listeners
+  sel.dispatchEvent(new Event('change'));
+  // Mostrar info del item en el modal
+  const header = document.querySelector('#modalMovimiento .modal-header h3');
+  if (header) header.innerHTML = `<i class="fas fa-right-left"></i> Movimiento — <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--navy);font-weight:600">${item.CODIGO}</span>`;
+  // Chip de stock actual bajo el header
+  let chipEl = document.getElementById('movStockActualChip');
+  if (!chipEl) {
+    chipEl = document.createElement('div');
+    chipEl.id = 'movStockActualChip';
+    chipEl.style.cssText = 'padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;color:var(--text-muted);display:flex;gap:16px;align-items:center';
+    document.querySelector('#modalMovimiento .modal-header').insertAdjacentElement('afterend', chipEl);
+  }
+  const stock = parseFloat(item.CANTIDAD ?? item.STOCK_ACTUAL) || 0;
+  const min   = parseFloat(item.STOCK_MINIMO) || 0;
+  const cls   = stock <= 0 ? 'badge-danger' : stock <= min ? 'badge-warning' : 'badge-success';
+  chipEl.innerHTML = `
+    <span><b>${item.DESCRIPCION}</b></span>
+    <span>Stock actual: <span class="badge ${cls}">${stock} ${item.UNIDAD_MEDIDA||item.UNIDAD||''}</span></span>
+    <span style="color:var(--text-muted)">Bodega: ${item.BODEGA||'—'}</span>`;
+  // Foco en tipo de movimiento
+  document.getElementById('movTipo').focus();
 }
 
 async function openModalMovimiento() {
@@ -2097,7 +2585,7 @@ function renderSolicitudes(sols) {
       </td>
     </tr>`;
   }).join('');
-  refrescarVistaSiActiva('solicitudes');
+  refrescarVistaSiActiva('solicitudes'); postRenderSort('tc-solicitudes');
 }
 
 function filtrarSolicitudes() {
@@ -2186,7 +2674,7 @@ function renderOC(ocs) {
       </td>
     </tr>`;
   }).join('');
-  refrescarVistaSiActiva('ordenescompra');
+  refrescarVistaSiActiva('ordenescompra'); postRenderSort('tc-ordenescompra');
 }
 
 function filtrarOC() {
@@ -2296,7 +2784,7 @@ async function loadTraslados() {
       <td>${t.BODEGA_ORIGEN}</td><td>${t.BODEGA_DESTINO}</td>
       <td>${t.CANTIDAD}</td><td>${fmtFecha(t.FECHA)}</td><td>${t.RESPONSABLE}</td>
     </tr>`).join('');
-    refrescarVistaSiActiva('traslados');
+    refrescarVistaSiActiva('traslados'); postRenderSort('tc-traslados');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
@@ -2361,7 +2849,7 @@ async function loadAjustes() {
       <td><span class="badge ${a.TIPO==='Positivo'?'badge-success':a.TIPO==='Negativo'?'badge-danger':'badge-info'}">${a.TIPO}</span></td>
       <td>${a.CANTIDAD}</td><td>${fmtFecha(a.FECHA)}</td><td>${a.MOTIVO}</td>
     </tr>`).join('');
-    refrescarVistaSiActiva('ajustes');
+    refrescarVistaSiActiva('ajustes'); postRenderSort('tc-ajustes');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
@@ -2420,7 +2908,7 @@ async function loadSalidas() {
       <td class="td-bold">${s.ID_SALIDA}</td><td>${s.ID_OT||s.OT||'—'}</td>
       <td>${fmtFecha(s.FECHA)}</td><td>${s.RESPONSABLE}</td><td>$${formatNum(s.TOTAL)}</td>
     </tr>`).join('');
-    refrescarVistaSiActiva('salidas');
+    refrescarVistaSiActiva('salidas'); postRenderSort('tc-salidas');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
