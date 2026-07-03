@@ -1367,10 +1367,11 @@ tr.bodega-group-header td{padding:10px 16px}
       <div class="form-grid">
         <div class="form-group col-full"><label>Item *</label>
           <select id="traItem" onchange="actualizarBodegasTraslado(this.value)"><option value="">Seleccionar item...</option></select></div>
-        <div class="form-group"><label>Bodega Origen *</label>
-          <select id="traOrigen" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar bodega...</option></select></div>
+        <div class="form-group"><label>Bodega Origen <span style="font-size:10.5px;color:var(--text-muted)">(según el item)</span></label>
+          <select id="traOrigen" disabled style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--bg2);color:var(--text-muted)"><option value="">Elige primero un item</option></select></div>
         <div class="form-group"><label>Bodega Destino *</label>
-          <select id="traDestino" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar bodega...</option></select></div>
+          <select id="traDestino" onchange="document.getElementById('traDestinoNueva').style.display = this.value==='__otra__' ? 'block' : 'none'" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar bodega...</option></select>
+          <input type="text" id="traDestinoNueva" placeholder="Nombre de la bodega nueva" style="display:none;margin-top:6px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"/></div>
         <div class="form-group"><label>Cantidad *</label><input type="number" id="traCantidad" placeholder="0" min="0.01" step="0.01"/></div>
         <div class="form-group"><label>Responsable * <span style="font-size:10px;color:var(--teal)">(ERP CORE)</span></label>
           <select id="traResponsable" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;width:100%;background:var(--surface)"><option value="">Seleccionar...</option></select></div>
@@ -3358,36 +3359,57 @@ async function loadTraslados() {
 
 function openModalTraslado() {
   poblarSelectItems(['traItem']);
-  // Poblar bodegas desde inventario existente
-  const bodegas = [...new Set(datosInventario.map(i=>(i.BODEGA||'').trim()).filter(Boolean))].sort();
-  ['traOrigen','traDestino'].forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '<option value="">Seleccionar bodega...</option>' +
-      bodegas.map(b=>`<option value="${b}">${b}</option>`).join('') +
-      '<option value="__otra__">✏️ Otra bodega...</option>';
-    sel.value = '';
-  });
+
+  // Origen: se autocompleta y se bloquea según el item que se elija abajo
+  const selOrigen = document.getElementById('traOrigen');
+  selOrigen.innerHTML = '<option value="">Elige primero un item</option>';
+  selOrigen.value = '';
+
+  // Destino: bodegas existentes (con items o registradas en el catálogo) + opción de crear una nueva
+  const bodegas = [...new Set([
+    ...datosInventario.map(i => (i.BODEGA || '').trim()).filter(Boolean),
+    ...Object.keys(getBodegasInfo())
+  ])].sort((a, b) => a.localeCompare(b, 'es'));
+  const selDestino = document.getElementById('traDestino');
+  selDestino.innerHTML = '<option value="">Seleccionar bodega...</option>' +
+    bodegas.map(b => `<option value="${b}">${b}</option>`).join('') +
+    '<option value="__otra__">✏️ Otra bodega (nueva)...</option>';
+  selDestino.value = '';
+  document.getElementById('traDestinoNueva').style.display = 'none';
+  document.getElementById('traDestinoNueva').value = '';
+
   document.getElementById('traCantidad').value = '';
   poblarSelectEmpleados('traResponsable');
   openModal('modalTraslado');
 }
 
-async function actualizarBodegasTraslado(idItem) {
-  if (!idItem) return;
+function actualizarBodegasTraslado(idItem) {
+  const sel = document.getElementById('traOrigen');
+  if (!idItem) {
+    sel.innerHTML = '<option value="">Elige primero un item</option>';
+    return;
+  }
   const item = datosInventario.find(i => i.ID_ITEM === idItem);
-  if (item?.BODEGA) document.getElementById('traOrigen').value = item.BODEGA;
+  const bod = (item?.BODEGA || '').trim();
+  if (!bod) {
+    sel.innerHTML = '<option value="">⚠️ Este item no tiene bodega asignada</option>';
+    return;
+  }
+  sel.innerHTML = `<option value="${bod}">${bod} — stock: ${item.CANTIDAD || 0}</option>`;
+  sel.value = bod;
 }
 
 async function guardarTraslado() {
+  const destinoSel = document.getElementById('traDestino').value;
   const datos = {
     ID_ITEM: document.getElementById('traItem').value,
     BODEGA_ORIGEN: document.getElementById('traOrigen').value.trim(),
-    BODEGA_DESTINO: document.getElementById('traDestino').value.trim(),
+    BODEGA_DESTINO: destinoSel === '__otra__'
+      ? document.getElementById('traDestinoNueva').value.trim()
+      : destinoSel.trim(),
     CANTIDAD: parseFloat(document.getElementById('traCantidad').value),
     RESPONSABLE: (() => { const s = document.getElementById('traResponsable'); return s.tagName==='SELECT' ? (s.options[s.selectedIndex]?.text?.split(' —')[0]||s.value) : s.value; })(),
   };
-  if (datos.BODEGA_ORIGEN === '__otra__') datos.BODEGA_ORIGEN = prompt('Nombre de la bodega origen:') || '';
-  if (datos.BODEGA_DESTINO === '__otra__') datos.BODEGA_DESTINO = prompt('Nombre de la bodega destino:') || '';
   if (!datos.ID_ITEM || !datos.BODEGA_ORIGEN || !datos.BODEGA_DESTINO || !datos.CANTIDAD) { toast('Completa todos los campos', 'warning'); return; }
   if (datos.BODEGA_ORIGEN === datos.BODEGA_DESTINO) { toast('Origen y destino no pueden ser la misma bodega', 'warning'); return; }
   try {
@@ -3395,6 +3417,9 @@ async function guardarTraslado() {
     if (!r.ok) throw new Error(r.mensaje);
     toast(r.mensaje, 'success');
     closeModal('modalTraslado');
+    // El stock cambió en dos bodegas (y puede haberse creado un item nuevo en destino)
+    // así que refrescamos inventario, resumen de bodegas y el historial de traslados
+    await loadInventarioData();
     loadTraslados();
   } catch(e) { toast(e.message, 'error'); }
 }
