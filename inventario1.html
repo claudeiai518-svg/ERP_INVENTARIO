@@ -1261,6 +1261,7 @@ tr.bodega-group-header td{padding:10px 16px}
     <div class="modal-body">
       <div class="form-grid">
         <input type="hidden" id="bodegaNombreOriginal"/>
+        <input type="hidden" id="bodegaIdOriginal"/>
         <div class="form-group col-full"><label>Nombre de la bodega *</label><input type="text" id="bodegaNombre" placeholder="Ej: Bodega Principal"/></div>
         <div class="form-group col-full"><label>Dirección</label><input type="text" id="bodegaDireccion" placeholder="Calle, ciudad..."/></div>
         <div class="form-group"><label>Teléfono</label><input type="text" id="bodegaTelefono" placeholder="Ej: 3001234567"/></div>
@@ -2517,7 +2518,10 @@ async function loadDashboard() {
 // ============================================================
 async function loadInventarioData() {
   try {
-    const r = await apiCall('INVENTARIO', 'listar');
+    const [r] = await Promise.all([
+      apiCall('INVENTARIO', 'listar'),
+      cargarBodegasCatalogo()
+    ]);
     if (!r.ok) throw new Error(r.mensaje);
     datosInventario = r.datos || [];
     datosInventarioFiltrados = datosInventario;
@@ -2647,7 +2651,7 @@ function renderBodegaResumen(items) {
   const grid = document.getElementById('bodegaSummaryGrid');
   if (!wrap || !grid) return;
 
-  const info = getBodegasInfo();
+  const info = bodegasInfoMap();
   const grupos = {};
   (items || []).forEach(i => {
     const bod = nombreBodega(i);
@@ -2703,17 +2707,35 @@ function toggleFiltroBodega(bod) {
 }
 
 // ============================================================
-// CATÁLOGO LOCAL DE BODEGAS (dirección, teléfono, encargado, notas)
-// Guardado en localStorage — pendiente de migrar a Google Sheets
+// CATÁLOGO DE BODEGAS (dirección, teléfono, encargado, notas)
+// Ahora se guarda en Google Sheets (hoja BODEGAS) vía el módulo
+// BODEGAS del backend. bodegasCatalogo es una copia en memoria
+// que se recarga cada vez que se abre/edita algo relacionado.
 // ============================================================
-const BODEGAS_INFO_KEY = 'inv_bodegas_info';
+let bodegasCatalogo = [];
 
-function getBodegasInfo() {
-  try { return JSON.parse(localStorage.getItem(BODEGAS_INFO_KEY)) || {}; }
-  catch (e) { return {}; }
+async function cargarBodegasCatalogo() {
+  try {
+    const r = await apiCall('BODEGAS', 'listar');
+    bodegasCatalogo = r.ok ? (r.datos || []) : [];
+  } catch (e) { bodegasCatalogo = []; }
 }
-function setBodegasInfo(obj) {
-  localStorage.setItem(BODEGAS_INFO_KEY, JSON.stringify(obj));
+
+// Mapa { NOMBRE: {direccion, telefono, encargado, notas, id} } para no tener
+// que reescribir todo el código que ya esperaba este formato
+function bodegasInfoMap() {
+  const map = {};
+  bodegasCatalogo.forEach(b => {
+    const n = (b.NOMBRE || '').trim();
+    if (n) map[n] = {
+      id: b.ID_BODEGA,
+      direccion: b.DIRECCION || '',
+      telefono:  b.TELEFONO  || '',
+      encargado: b.ENCARGADO || '',
+      notas:     b.NOTAS     || '',
+    };
+  });
+  return map;
 }
 
 function abrirModalBodegas() {
@@ -2724,7 +2746,7 @@ function abrirModalBodegas() {
 function renderListaBodegasGestion() {
   const cont = document.getElementById('listaBodegasGestion');
   if (!cont) return;
-  const info = getBodegasInfo();
+  const info = bodegasInfoMap();
   const nombresItems = [...new Set((datosInventario || []).map(i => nombreBodega(i)).filter(b => b !== 'Sin bodega asignada'))];
   const nombres = [...new Set([...nombresItems, ...Object.keys(info)])].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
 
@@ -2756,52 +2778,69 @@ function renderListaBodegasGestion() {
 }
 
 function abrirFormBodega(nombreExistente = '') {
-  const info = getBodegasInfo();
+  const entry = nombreExistente ? bodegasCatalogo.find(b => (b.NOMBRE || '').trim() === nombreExistente) : null;
+  document.getElementById('bodegaIdOriginal').value = entry?.ID_BODEGA || '';
   document.getElementById('bodegaNombreOriginal').value = nombreExistente;
   document.getElementById('modalBodegaFormTitle').textContent = nombreExistente ? 'Editar Bodega' : 'Nueva Bodega';
   document.getElementById('bodegaNombre').value = nombreExistente || '';
-  const d = info[nombreExistente] || {};
-  document.getElementById('bodegaDireccion').value = d.direccion || '';
-  document.getElementById('bodegaTelefono').value = d.telefono || '';
-  document.getElementById('bodegaEncargado').value = d.encargado || '';
-  document.getElementById('bodegaNotas').value = d.notas || '';
+  document.getElementById('bodegaDireccion').value = entry?.DIRECCION || '';
+  document.getElementById('bodegaTelefono').value = entry?.TELEFONO || '';
+  document.getElementById('bodegaEncargado').value = entry?.ENCARGADO || '';
+  document.getElementById('bodegaNotas').value = entry?.NOTAS || '';
   openModal('modalBodegaForm');
 }
 
-function guardarBodegaInfo() {
+async function guardarBodegaInfo() {
+  const idBodega = document.getElementById('bodegaIdOriginal').value.trim();
   const nombreOriginal = document.getElementById('bodegaNombreOriginal').value.trim();
   const nombre = document.getElementById('bodegaNombre').value.trim();
   if (!nombre) { toast('Escribe el nombre de la bodega', 'warning'); return; }
 
-  const info = getBodegasInfo();
-  // Si se cambió el nombre, mover los datos guardados a la nueva clave
-  if (nombreOriginal && nombreOriginal !== nombre) delete info[nombreOriginal];
-  info[nombre] = {
-    direccion: document.getElementById('bodegaDireccion').value.trim(),
-    telefono:  document.getElementById('bodegaTelefono').value.trim(),
-    encargado: document.getElementById('bodegaEncargado').value.trim(),
-    notas:     document.getElementById('bodegaNotas').value.trim()
+  const datos = {
+    NOMBRE:    nombre,
+    DIRECCION: document.getElementById('bodegaDireccion').value.trim(),
+    TELEFONO:  document.getElementById('bodegaTelefono').value.trim(),
+    ENCARGADO: document.getElementById('bodegaEncargado').value.trim(),
+    NOTAS:     document.getElementById('bodegaNotas').value.trim(),
   };
-  setBodegasInfo(info);
 
-  // Si se renombró y había items con el nombre anterior, actualizar el filtro activo
-  if (bodegaFiltroActiva === nombreOriginal && nombreOriginal !== nombre) bodegaFiltroActiva = nombre;
+  try {
+    let r;
+    if (idBodega) {
+      datos.ID_BODEGA = idBodega;
+      r = await apiCall('BODEGAS', 'actualizar', datos);
+    } else {
+      r = await apiCall('BODEGAS', 'crear', datos);
+    }
+    if (!r.ok) throw new Error(r.mensaje);
 
-  toast('Bodega guardada', 'success');
-  closeModal('modalBodegaForm');
-  renderListaBodegasGestion();
-  renderBodegaResumen(datosInventario);
-  const selBodega = document.getElementById('itemBodega');
-  if (selBodega) poblarSelectBodegas(selBodega.value);
+    // Si se renombró y había items con el nombre anterior, el backend ya los
+    // reasignó en cascada — actualizamos el filtro activo si aplica
+    if (bodegaFiltroActiva === nombreOriginal && nombreOriginal !== nombre) bodegaFiltroActiva = nombre;
+
+    toast(r.mensaje, 'success');
+    closeModal('modalBodegaForm');
+    await cargarBodegasCatalogo();
+    renderListaBodegasGestion();
+    // Si el backend reasignó items (cambio de nombre), refrescamos inventario completo
+    if (r.datos?.itemsActualizados) await loadInventarioData();
+    else renderBodegaResumen(datosInventario);
+    const selBodega = document.getElementById('itemBodega');
+    if (selBodega) poblarSelectBodegas(selBodega.value);
+  } catch (e) { toast(e.message, 'error'); }
 }
 
-function borrarInfoBodega(nombre) {
+async function borrarInfoBodega(nombre) {
+  const entry = bodegasCatalogo.find(b => (b.NOMBRE || '').trim() === nombre);
+  if (!entry) return;
   if (!confirm(`¿Quitar los datos de contacto de "${nombre}"?\n\n(Los items que ya están en esa bodega no se ven afectados, solo se borra la dirección/teléfono/encargado guardados)`)) return;
-  const info = getBodegasInfo();
-  delete info[nombre];
-  setBodegasInfo(info);
-  renderListaBodegasGestion();
-  renderBodegaResumen(datosInventario);
+  try {
+    const r = await apiCall('BODEGAS', 'eliminar', { idBodega: entry.ID_BODEGA });
+    if (!r.ok) throw new Error(r.mensaje);
+    await cargarBodegasCatalogo();
+    renderListaBodegasGestion();
+    renderBodegaResumen(datosInventario);
+  } catch (e) { toast(e.message, 'error'); }
 }
 
 function poblarSelectItems(extraIds = []) {
@@ -2915,7 +2954,7 @@ function poblarSelectBodegas(seleccionada = '') {
   const sel = document.getElementById('itemBodega');
   const bodegas = [...new Set([
     ...datosInventario.map(i => (i.BODEGA || '').trim()).filter(Boolean),
-    ...Object.keys(getBodegasInfo())
+    ...Object.keys(bodegasInfoMap())
   ])].sort((a,b)=>a.localeCompare(b,'es'));
 
   let opts = '<option value="">Sin bodega</option>';
@@ -3368,7 +3407,7 @@ function openModalTraslado() {
   // Destino: bodegas existentes (con items o registradas en el catálogo) + opción de crear una nueva
   const bodegas = [...new Set([
     ...datosInventario.map(i => (i.BODEGA || '').trim()).filter(Boolean),
-    ...Object.keys(getBodegasInfo())
+    ...Object.keys(bodegasInfoMap())
   ])].sort((a, b) => a.localeCompare(b, 'es'));
   const selDestino = document.getElementById('traDestino');
   selDestino.innerHTML = '<option value="">Seleccionar bodega...</option>' +
